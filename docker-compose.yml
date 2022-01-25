@@ -1,0 +1,13 @@
+version: '3.1'
+
+services:
+  db:
+    image: postgres
+    container_name: example_db
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: example_database
+    ports:
+      - "5432:5432"

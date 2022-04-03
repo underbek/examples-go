@@ -1,14 +1,14 @@
 package logic
 
 import (
-	"github.com/AndreyAndreevich/examples-go/integration_tests/domain"
-	"github.com/AndreyAndreevich/examples-go/integration_tests/logic/mocks"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/AndreyAndreevich/examples-go/integration_tests/domain"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCreatUser(t *testing.T) {
-	storageMock := &mocks.Storage{}
+	storageMock := &storageMock{}
 	l := New(storageMock)
 
 	storageMock.On("GetUser", 10).Return(domain.User{

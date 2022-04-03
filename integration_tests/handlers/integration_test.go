@@ -2,17 +2,17 @@ package handlers
 
 import (
 	"fmt"
-	"github.com/AndreyAndreevich/examples-go/integration_tests/domain"
-	"github.com/AndreyAndreevich/examples-go/integration_tests/handlers/mocks"
-	"github.com/AndreyAndreevich/examples-go/integration_tests/logic"
-	"github.com/AndreyAndreevich/examples-go/integration_tests/storage"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
+
+	"github.com/AndreyAndreevich/examples-go/integration_tests/domain"
+	"github.com/AndreyAndreevich/examples-go/integration_tests/logic"
+	"github.com/AndreyAndreevich/examples-go/integration_tests/storage"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestCreateUser(t *testing.T) {
@@ -38,7 +38,7 @@ func TestCreateUser(t *testing.T) {
 }
 
 func TestCreateUserWithMock(t *testing.T) {
-	l := &mocks.Logic{}
+	l := &logicIntMock{}
 
 	l.On("CreateUser", "Tony Stark", mock.Anything).Return(domain.User{
 		Id:      10,

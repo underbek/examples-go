@@ -1,12 +1,13 @@
 package logic
 
 import (
-	"github.com/AndreyAndreevich/examples-go/integration_tests/domain"
 	"math/rand"
 	"time"
+
+	"github.com/AndreyAndreevich/examples-go/integration_tests/domain"
 )
 
-//go:generate mockery --name=storage --structname=Storage
+//go:generate mockery --name=storage --structname=storageMock --filename=storage_mock.go --inpackage
 type storage interface {
 	AddUser(user domain.User) error
 	GetUser(id int) (domain.User, error)

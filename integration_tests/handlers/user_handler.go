@@ -3,11 +3,12 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/AndreyAndreevich/examples-go/integration_tests/domain"
 	"net/http"
+
+	"github.com/AndreyAndreevich/examples-go/integration_tests/domain"
 )
 
-//go:generate mockery --name=logicInt --structname=Logic
+//go:generate mockery --name=logicInt --structname=logicIntMock --filename=logicint_mock.go --inpackage
 type logicInt interface {
 	CreateUser(name string, balance float64) (domain.User, error)
 	GetUser(id int) (domain.User, error)

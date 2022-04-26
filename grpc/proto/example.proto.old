@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package example;
+
+option go_package = ".";
+
+service UserService {
+  rpc CreateUser(CreateUserRequest) returns (User) {}
+  rpc GetUser(GetUserRequest) returns (User) {}
+}
+
+message CreateUserRequest {
+  optional string email = 1;
+  string name = 2 [deprecated = true];
+}
+
+message GetUserRequest {
+  string id = 1;
+}
+
+message User {
+  string id = 1;
+  string email = 2;
+  string name = 3 [deprecated = true];
+}
+
+
+

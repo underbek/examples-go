@@ -1,78 +1,84 @@
 package handlers
 
 import (
-	"fmt"
-	"io/ioutil"
+	"bytes"
+	"context"
+	"database/sql"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
+	"time"
 
-	"github.com/AndreyAndreevich/examples-go/integration_tests/domain"
 	"github.com/AndreyAndreevich/examples-go/integration_tests/logic"
+	"github.com/AndreyAndreevich/examples-go/integration_tests/migrate"
 	"github.com/AndreyAndreevich/examples-go/integration_tests/storage"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
+	"github.com/AndreyAndreevich/examples-go/integration_tests/testentities"
+	"github.com/AndreyAndreevich/examples-go/testutils"
+	"github.com/stretchr/testify/suite"
 )
 
-func TestCreateUser(t *testing.T) {
-	s := storage.New()
-	l := logic.New(s)
-	userHandler := NewUserHandler(l)
-
-	fReq, err := os.Open("../fixtures/create_user_request.json")
-
-	request := httptest.NewRequest(http.MethodPost, "/user", fReq)
-
-	w := httptest.NewRecorder()
-	userHandler.ServeHTTP(w, request)
-	res := w.Result()
-
-	assert.Equal(t, res.StatusCode, http.StatusOK)
-
-	fRes, err := os.ReadFile("../fixtures/create_user_response.json")
-	assert.NoError(t, err)
-	defer res.Body.Close()
-	resBody, _ := ioutil.ReadAll(res.Body)
-	assert.JSONEq(t, string(fRes), string(resBody))
+type TestSuite struct {
+	suite.Suite
+	container   *testutils.PostgreSQLContainer
+	fixtures    *testutils.FixtureLoader
+	userHandler *userHandler
 }
 
-func TestCreateUserWithMock(t *testing.T) {
-	l := &logicIntMock{}
+func (s *TestSuite) SetupSuite() {
+	ctx, ctxCancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer ctxCancel()
 
-	l.On("CreateUser", "Tony Stark", mock.Anything).Return(domain.User{
-		Id:      10,
-		Name:    "Tony Stark",
-		Balance: 1_000_000_000,
-	}, nil)
+	c, err := testutils.NewPostgreSQLContainer(ctx)
+	s.Require().NoError(err)
 
-	userHandler := NewUserHandler(l)
+	s.container = c
 
-	fReq, err := os.Open("../fixtures/create_user_request.json")
+	s.fixtures = testutils.NewFixtureLoader(s.T(), testentities.Fixtures)
 
-	request := httptest.NewRequest(http.MethodPost, "/user", fReq)
+	db, err := sql.Open("postgres", c.GetDSN())
+	s.Require().NoError(err)
 
-	w := httptest.NewRecorder()
-	userHandler.ServeHTTP(w, request)
-	res := w.Result()
+	err = testutils.Migrate(db, migrate.Migrations)
+	s.Require().NoError(err)
 
-	assert.Equal(t, res.StatusCode, http.StatusOK)
+	repo, err := storage.New(c.GetDSN())
+	s.Require().NoError(err)
 
-	fRes, err := os.ReadFile("../fixtures/create_user_response.json")
-	assert.NoError(t, err)
-	defer res.Body.Close()
-	resBody, _ := ioutil.ReadAll(res.Body)
-	assert.JSONEq(t, string(fRes), string(resBody))
+	l := logic.New(repo)
+	s.userHandler = &userHandler{l}
 }
 
-func TestWithCleanup(t *testing.T) {
-	t.Cleanup(func() {
-		fmt.Println("Cancel")
+func (s *TestSuite) TearDownSuite() {
+	ctx, ctxCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer ctxCancel()
+
+	s.Require().NoError(s.container.Terminate(ctx))
+}
+
+func TestSuite_PostgreSQLStorage(t *testing.T) {
+	suite.Run(t, new(TestSuite))
+}
+
+func (s *TestSuite) TestCreateUser() {
+	fReq := s.fixtures.LoadString("fixtures/create_user_request.json")
+
+	request := httptest.NewRequest(http.MethodPost, "/user", bytes.NewBufferString(fReq))
+
+	w := httptest.NewRecorder()
+	s.userHandler.ServeHTTP(w, request)
+	res := w.Result()
+	defer res.Body.Close()
+
+	s.Require().Equal(res.StatusCode, http.StatusOK)
+
+	var userResponse UserResponse
+	err := json.NewDecoder(res.Body).Decode(&userResponse)
+	s.Require().NoError(err)
+
+	expected := s.fixtures.LoadTemplate("fixtures/create_user_response.json.temp", map[string]interface{}{
+		"id": userResponse.Id,
 	})
 
-	fmt.Println("Done")
-
-	//foo()
+	testutils.JSONEq(s.T(), expected, userResponse)
 }
-
-// go test

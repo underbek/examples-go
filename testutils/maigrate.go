@@ -2,11 +2,12 @@ package testutils
 
 import (
 	"database/sql"
-	"github.com/pressly/goose"
+	"io/fs"
+
+	"github.com/pressly/goose/v3"
 )
 
-const migrationPath = "db/migrate"
-
-func migrate(db *sql.DB) error {
-	return goose.Up(db, migrationPath)
+func Migrate(db *sql.DB, path fs.FS) error {
+	goose.SetBaseFS(path)
+	return goose.Up(db, "migrations")
 }

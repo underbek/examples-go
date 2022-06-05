@@ -3,10 +3,9 @@ package testutils
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/docker/go-connections/nat"
-	// Register PSQL driver.
+	_ "github.com/jackc/pgx/v4/stdlib"
 	_ "github.com/lib/pq"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -27,12 +26,13 @@ type (
 		Password   string
 		MappedPort string
 		Database   string
+		Host       string
 	}
 )
 
 // GetDSN returns DB connection URL.
 func (c PostgreSQLContainer) GetDSN() string {
-	return fmt.Sprintf("postgres://%s:%s@localhost:%s/%s?sslmode=disable", c.Config.User, c.Config.Password, c.Config.MappedPort, c.Config.Database)
+	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", c.Config.User, c.Config.Password, c.Config.Host, c.Config.MappedPort, c.Config.Database)
 }
 
 func WithPostgreSQLTag(tag string) PostgreSQLContainerOption {
@@ -59,7 +59,7 @@ func NewPostgreSQLContainer(ctx context.Context, opts ...PostgreSQLContainerOpti
 		ImageTag: "11.5",
 		User:     "user",
 		Password: "password",
-		Database: "mockdb",
+		Database: "db_test",
 	}
 	for _, opt := range opts {
 		opt(&config)
@@ -79,32 +79,19 @@ func NewPostgreSQLContainer(ctx context.Context, opts ...PostgreSQLContainerOpti
 				containerPort,
 			},
 			Image:      fmt.Sprintf("%s:%s", psqlImage, config.ImageTag),
-			SkipReaper: true,
-			WaitingFor: wait.ForSQL(
-				nat.Port(containerPort),
-				"postgres",
-				func(port nat.Port) string {
-					return fmt.Sprintf("postgres://%s:%s@localhost:%s/%s?sslmode=disable", config.User, config.Password, port.Port(), config.Database)
-				}).
-				Timeout(5 * time.Second),
+			WaitingFor: wait.ForListeningPort(nat.Port(containerPort)),
 		},
-		Started:      true,
-		ProviderType: testcontainers.ProviderDocker,
+		Started: true,
 	}
 
-	// Create and run testcontainer
-	provider, err := req.ProviderType.GetProvider()
+	container, err := testcontainers.GenericContainer(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("getting request provider: %w", err)
 	}
 
-	container, err := provider.CreateContainer(ctx, req.ContainerRequest)
+	host, err := container.Host(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("creating container: %w", err)
-	}
-
-	if err := container.Start(ctx); err != nil {
-		return nil, fmt.Errorf("starting container: %w", err)
+		return nil, fmt.Errorf("getting host for: %w", err)
 	}
 
 	// Get mapped port for 5432/tcp
@@ -113,6 +100,9 @@ func NewPostgreSQLContainer(ctx context.Context, opts ...PostgreSQLContainerOpti
 		return nil, fmt.Errorf("getting mapped port for (%s): %w", containerPort, err)
 	}
 	config.MappedPort = mappedPort.Port()
+	config.Host = host
+
+	fmt.Println("Host:", config.Host, config.MappedPort)
 
 	return &PostgreSQLContainer{
 		Container: container,

@@ -3,15 +3,16 @@ package testutils
 import (
 	"context"
 	"database/sql"
-	"github.com/stretchr/testify/suite"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type TestSuite struct {
 	suite.Suite
 	container *PostgreSQLContainer
-	db *sql.DB
+	db        *sql.DB
 }
 
 func (s *TestSuite) SetupSuite() {
@@ -23,15 +24,7 @@ func (s *TestSuite) SetupSuite() {
 
 	s.container = c
 
-	dsn := c.GetDSN()
-
-	s.db, err = sql.Open("postgres", dsn)
-	s.Require().NoError(err)
-
-	err = s.db.Ping()
-	s.Require().NoError(err)
-
-	err = migrate(s.db)
+	s.db, err = sql.Open("postgres", c.GetDSN())
 	s.Require().NoError(err)
 }
 
@@ -48,8 +41,5 @@ func TestSuite_PostgreSQLStorage(t *testing.T) {
 }
 
 func (s *TestSuite) TestPing() {
-	s.Run("Ping", func() {
-		err := s.db.Ping()
-		s.Require().NoError(err)
-	})
+	s.Require().NoError(s.db.Ping())
 }

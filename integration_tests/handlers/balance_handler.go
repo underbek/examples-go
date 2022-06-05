@@ -25,7 +25,7 @@ func (h *balanceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		user, err := h.logic.AddBalance(request.UserId, request.Amount)
+		user, err := h.logic.AddBalance(r.Context(), request.UserId, request.Amount)
 		if err != nil {
 			createErrorResponse(err, w)
 			return

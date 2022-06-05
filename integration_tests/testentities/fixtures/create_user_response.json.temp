@@ -1,0 +1,5 @@
+{
+  "id": {{.id}},
+  "name": "Tony Stark",
+  "balance": "1000000000"
+}

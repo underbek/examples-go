@@ -55,7 +55,7 @@ grpc ls localhost:8000
 * [grpc gateway на русском](https://habr.com/ru/post/496574/)
 * [альтернатива генерации http из grpc (clay)](https://github.com/utrack/clay)
 * [работа с ошибками](https://jbrandhorst.com/post/grpc-errors/)
-*[grpc mock](https://github.com/tokopedia/gripmock)
+* [grpc mock](https://github.com/tokopedia/gripmock)
 * [grpc middlewares](https://github.com/grpc-ecosystem/go-grpc-middleware)
 * [grpc prometheus](https://github.com/grpc-ecosystem/go-grpc-prometheus)
 * [grpc-awesome](https://github.com/grpc-ecosystem/awesome-grpc)

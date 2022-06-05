@@ -1,18 +1,20 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 
 	"github.com/AndreyAndreevich/examples-go/integration_tests/domain"
+	"github.com/shopspring/decimal"
 )
 
 //go:generate mockery --name=logicInt --structname=logicIntMock --filename=logicint_mock.go --inpackage
 type logicInt interface {
-	CreateUser(name string, balance float64) (domain.User, error)
-	GetUser(id int) (domain.User, error)
-	AddBalance(id int, amount float64) (domain.User, error)
+	CreateUser(ctx context.Context, user domain.User) (domain.User, error)
+	GetUser(ctx context.Context, id int) (domain.User, error)
+	AddBalance(ctx context.Context, id int, amount decimal.Decimal) (domain.User, error)
 }
 
 type userHandler struct {
@@ -35,7 +37,7 @@ func (h *userHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		user, err := h.logic.CreateUser(request.Name, request.Balance)
+		user, err := h.logic.CreateUser(r.Context(), domain.User{Name: request.Name, Balance: request.Balance})
 		if err != nil {
 			createErrorResponse(err, w)
 			return
@@ -52,7 +54,7 @@ func (h *userHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		user, err := h.logic.GetUser(request.Id)
+		user, err := h.logic.GetUser(r.Context(), request.Id)
 		if err != nil {
 			createErrorResponse(err, w)
 			return

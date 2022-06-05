@@ -53,7 +53,14 @@ func (s *storage) CreatUser(ctx context.Context, user domain.User) (domain.User,
 }
 
 func (s *storage) GetUser(ctx context.Context, id int) (domain.User, error) {
-	return domain.User{}, nil
+	query := `SELECT id, name, balance, created_at, updated_at FROM users WHERE id = $1`
+	var user domain.User
+	err := s.db.GetContext(ctx, &user, query, id)
+	if err != nil {
+		return domain.User{}, err
+	}
+
+	return user, nil
 }
 
 func (s *storage) UpdateUser(ctx context.Context, user domain.User) (domain.User, error) {

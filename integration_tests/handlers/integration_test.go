@@ -15,6 +15,7 @@ import (
 	"github.com/AndreyAndreevich/examples-go/integration_tests/storage"
 	"github.com/AndreyAndreevich/examples-go/integration_tests/testentities"
 	"github.com/AndreyAndreevich/examples-go/testutils"
+	"github.com/go-testfixtures/testfixtures/v3"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -42,6 +43,14 @@ func (s *TestSuite) SetupSuite() {
 	err = testutils.Migrate(db, migrate.Migrations)
 	s.Require().NoError(err)
 
+	fixtures, err := testfixtures.New(
+		testfixtures.Database(db),
+		testfixtures.Dialect("postgres"),
+		testfixtures.Directory("../testentities/fixtures/postgres"),
+	)
+	s.Require().NoError(err)
+	s.Require().NoError(fixtures.Load())
+
 	repo, err := storage.New(c.GetDSN())
 	s.Require().NoError(err)
 
@@ -61,7 +70,7 @@ func TestSuite_PostgreSQLStorage(t *testing.T) {
 }
 
 func (s *TestSuite) TestCreateUser() {
-	fReq := s.fixtures.LoadString("fixtures/create_user_request.json")
+	fReq := s.fixtures.LoadString("fixtures/api/create_user_request.json")
 
 	request := httptest.NewRequest(http.MethodPost, "/user", bytes.NewBufferString(fReq))
 
@@ -76,9 +85,29 @@ func (s *TestSuite) TestCreateUser() {
 	err := json.NewDecoder(res.Body).Decode(&userResponse)
 	s.Require().NoError(err)
 
-	expected := s.fixtures.LoadTemplate("fixtures/create_user_response.json.temp", map[string]interface{}{
+	expected := s.fixtures.LoadTemplate("fixtures/api/create_user_response.json.temp", map[string]interface{}{
 		"id": userResponse.Id,
 	})
 
+	testutils.JSONEq(s.T(), expected, userResponse)
+}
+
+func (s *TestSuite) TestGetUser() {
+	fReq := s.fixtures.LoadString("fixtures/api/get_user_request.json")
+
+	request := httptest.NewRequest(http.MethodGet, "/user", bytes.NewBufferString(fReq))
+
+	w := httptest.NewRecorder()
+	s.userHandler.ServeHTTP(w, request)
+	res := w.Result()
+	defer res.Body.Close()
+
+	s.Require().Equal(res.StatusCode, http.StatusOK)
+
+	var userResponse UserResponse
+	err := json.NewDecoder(res.Body).Decode(&userResponse)
+	s.Require().NoError(err)
+
+	expected := s.fixtures.LoadString("fixtures/api/get_user_response.json")
 	testutils.JSONEq(s.T(), expected, userResponse)
 }

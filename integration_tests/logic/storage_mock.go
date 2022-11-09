@@ -5,8 +5,8 @@ package logic
 import (
 	context "context"
 
-	domain "github.com/AndreyAndreevich/examples-go/integration_tests/domain"
 	mock "github.com/stretchr/testify/mock"
+	domain "github.com/underbek/examples-go/integration_tests/domain"
 
 	testing "testing"
 )

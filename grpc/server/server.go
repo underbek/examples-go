@@ -3,8 +3,8 @@ package server
 import (
 	"context"
 
-	pb "github.com/AndreyAndreevich/examples-go/grpc/proto"
 	"github.com/docker/distribution/uuid"
+	pb "github.com/underbek/examples-go/grpc/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

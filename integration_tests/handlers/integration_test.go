@@ -10,13 +10,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/AndreyAndreevich/examples-go/integration_tests/logic"
-	"github.com/AndreyAndreevich/examples-go/integration_tests/migrate"
-	"github.com/AndreyAndreevich/examples-go/integration_tests/storage"
-	"github.com/AndreyAndreevich/examples-go/integration_tests/testentities"
-	"github.com/AndreyAndreevich/examples-go/testutils"
 	"github.com/go-testfixtures/testfixtures/v3"
 	"github.com/stretchr/testify/suite"
+	"github.com/underbek/examples-go/integration_tests/logic"
+	"github.com/underbek/examples-go/integration_tests/migrate"
+	"github.com/underbek/examples-go/integration_tests/storage"
+	"github.com/underbek/examples-go/integration_tests/testentities"
+	"github.com/underbek/examples-go/testutils"
 )
 
 type TestSuite struct {

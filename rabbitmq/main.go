@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/AndreyAndreevich/examples-go/rabbitmq/rabbit"
 	"log"
+
+	"github.com/underbek/examples-go/rabbitmq/rabbit"
 )
 
 func main() {

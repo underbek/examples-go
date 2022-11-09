@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"github.com/AndreyAndreevich/examples-go/integration_tests/domain"
 	"github.com/shopspring/decimal"
+	"github.com/underbek/examples-go/integration_tests/domain"
 )
 
 type CreateUserRequest struct {

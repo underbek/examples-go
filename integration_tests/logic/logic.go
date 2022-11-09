@@ -3,8 +3,8 @@ package logic
 import (
 	"context"
 
-	"github.com/AndreyAndreevich/examples-go/integration_tests/domain"
 	"github.com/shopspring/decimal"
+	"github.com/underbek/examples-go/integration_tests/domain"
 )
 
 //go:generate mockery --name=storage --structname=storageMock --filename=storage_mock.go --inpackage

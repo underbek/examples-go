@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/AndreyAndreevich/examples-go/integration_tests/domain"
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/underbek/examples-go/integration_tests/domain"
 )
 
 func TestCreatUser(t *testing.T) {

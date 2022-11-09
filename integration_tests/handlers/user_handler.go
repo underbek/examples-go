@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/AndreyAndreevich/examples-go/integration_tests/domain"
 	"github.com/shopspring/decimal"
+	"github.com/underbek/examples-go/integration_tests/domain"
 )
 
 //go:generate mockery --name=logicInt --structname=logicIntMock --filename=logicint_mock.go --inpackage

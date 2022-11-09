@@ -3,8 +3,9 @@ package rabbit
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/AndreyAndreevich/examples-go/rabbitmq/domain"
+
 	"github.com/streadway/amqp"
+	"github.com/underbek/examples-go/rabbitmq/domain"
 )
 
 type Handler struct{}

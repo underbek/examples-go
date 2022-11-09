@@ -5,8 +5,8 @@ package handlers
 import (
 	context "context"
 
-	domain "github.com/AndreyAndreevich/examples-go/integration_tests/domain"
 	decimal "github.com/shopspring/decimal"
+	domain "github.com/underbek/examples-go/integration_tests/domain"
 
 	mock "github.com/stretchr/testify/mock"
 

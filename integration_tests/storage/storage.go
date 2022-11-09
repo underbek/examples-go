@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 
-	"github.com/AndreyAndreevich/examples-go/integration_tests/domain"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"github.com/underbek/examples-go/integration_tests/domain"
 )
 
 type storage struct {

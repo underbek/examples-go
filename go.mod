@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/docker/go-connections v0.4.0
+	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-testfixtures/testfixtures/v3 v3.7.0
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/websocket v1.4.2
@@ -15,7 +16,6 @@ require (
 	github.com/lib/pq v1.10.6
 	github.com/magiconair/properties v1.8.5
 	github.com/pkg/errors v0.9.1
-	github.com/pressly/goose v2.7.0+incompatible
 	github.com/pressly/goose/v3 v3.5.3
 	github.com/shopspring/decimal v1.3.1
 	github.com/streadway/amqp v1.0.0
@@ -35,9 +35,11 @@ require (
 	github.com/Microsoft/go-winio v0.5.1 // indirect
 	github.com/Microsoft/hcsshim v0.8.23 // indirect
 	github.com/cenkalti/backoff/v4 v4.1.2 // indirect
+	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/containerd/cgroups v1.0.1 // indirect
 	github.com/containerd/containerd v1.5.9 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/docker/docker v20.10.11+incompatible // indirect
 	github.com/docker/go-units v0.4.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
@@ -51,6 +53,7 @@ require (
 	github.com/jackc/pgproto3/v2 v2.3.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b // indirect
 	github.com/jackc/pgtype v1.11.0 // indirect
+	github.com/jackc/puddle v1.2.1 // indirect
 	github.com/moby/sys/mount v0.2.0 // indirect
 	github.com/moby/sys/mountinfo v0.5.0 // indirect
 	github.com/moby/term v0.0.0-20210619224110-3f7ff695adc6 // indirect

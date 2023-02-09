@@ -10,14 +10,13 @@ import (
 	"go.uber.org/zap"
 )
 
-func JaegerTraceMiddleware(next http.Handler, cfg tracing.JaegerConfig) http.Handler {
+func JaegerTraceMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if cfg.Enabled {
-			newCtx, span := tracing.StartCustomSpan(r.Context(), trace.SpanKindServer, "httpserver", "jaegerTraceMW")
-			defer span.End()
-
-			newCtx = logger.AddCtxValue(newCtx, "traceID", span.SpanContext().TraceID().String())
-			ctxzap.AddFields(newCtx, zap.Any("traceID", span.SpanContext().TraceID()))
+		newCtx, span := tracing.StartCustomSpan(r.Context(), trace.SpanKindServer, "httpserver", "jaegerTraceMW")
+		defer span.End()
+		if span.IsRecording() {
+			newCtx = logger.AddCtxValue(newCtx, tracing.TraceID, span.SpanContext().TraceID().String())
+			ctxzap.AddFields(newCtx, zap.Any(tracing.TraceID, span.SpanContext().TraceID()))
 
 			r = r.WithContext(newCtx)
 		}

@@ -8,7 +8,6 @@ import (
 
 	"github.com/underbek/examples-go/config"
 	"github.com/underbek/examples-go/logger"
-	"github.com/underbek/examples-go/tracing"
 	"golang.org/x/sync/errgroup"
 
 	mw "github.com/underbek/examples-go/middlewares/http"
@@ -20,9 +19,9 @@ type HTTPServer struct {
 	serverPort int
 }
 
-func New(logger *logger.Logger, cfgServer config.HTTPServer, cfgJaeger tracing.JaegerConfig, handler http.Handler) *HTTPServer {
+func New(logger *logger.Logger, cfgServer config.HTTPServer, handler http.Handler) *HTTPServer {
 	server := &http.Server{
-		Handler:      mw.JaegerTraceMiddleware(mw.Logging(logger)(handler), cfgJaeger),
+		Handler:      mw.JaegerTraceMiddleware(mw.Logging(logger)(handler)),
 		Addr:         fmt.Sprintf(":%d", cfgServer.Port),
 		WriteTimeout: cfgServer.WriteTimeout,
 		ReadTimeout:  cfgServer.ReadTimeout,

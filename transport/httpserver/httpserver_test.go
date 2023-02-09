@@ -12,7 +12,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/underbek/examples-go/config"
 	"github.com/underbek/examples-go/logger"
-	"github.com/underbek/examples-go/tracing"
 )
 
 func TestHttpServer(t *testing.T) {
@@ -31,9 +30,6 @@ func TestHttpServer(t *testing.T) {
 			Port:         8080,
 			WriteTimeout: time.Second,
 			ReadTimeout:  time.Second,
-		},
-		tracing.JaegerConfig{
-			Enabled: false,
 		},
 		healthCheck.Handler())
 

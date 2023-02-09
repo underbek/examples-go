@@ -13,19 +13,18 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-type Config struct {
+type JaegerConfig struct {
 	Endpoint       string `env:"JAEGER_ADDRESS"`
 	Enabled        bool   `env:"JAEGER_ENABLED" envDefault:"false"`
 	ServiceName    string `env:"APP_NAME" envDefault:"app"`
 	ServiceVersion string `env:"SERVICE_VERSION"`
-	Environment    string `env:"ENV"`
 }
 
 type Provider struct {
 	provider trace.TracerProvider
 }
 
-func NewProvider(config Config) (*Provider, error) {
+func NewProvider(config JaegerConfig) (*Provider, error) {
 	if !config.Enabled {
 		return &Provider{
 			provider: trace.NewNoopTracerProvider(),

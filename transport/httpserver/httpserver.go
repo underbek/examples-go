@@ -20,7 +20,7 @@ type HTTPServer struct {
 	serverPort int
 }
 
-func New(logger *logger.Logger, cfgServer config.HTTPServer, cfgJaeger tracing.Config, handler http.Handler) *HTTPServer {
+func New(logger *logger.Logger, cfgServer config.HTTPServer, cfgJaeger tracing.JaegerConfig, handler http.Handler) *HTTPServer {
 	server := &http.Server{
 		Handler:      mw.JaegerTraceMiddleware(mw.Logging(logger)(handler), cfgJaeger),
 		Addr:         fmt.Sprintf(":%d", cfgServer.Port),

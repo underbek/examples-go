@@ -22,7 +22,7 @@ type App struct {
 	defers        []Defer
 }
 
-func NewApp(cfgApp config.App, cfgJaeger tracing.Config) (*App, error) {
+func NewApp(cfgApp config.App, cfgJaeger tracing.JaegerConfig) (*App, error) {
 	log, err := logger.New(cfgApp.Debug)
 	if err != nil {
 		return nil, err

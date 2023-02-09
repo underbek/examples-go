@@ -10,7 +10,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func JaegerTraceMiddleware(next http.Handler, cfg tracing.Config) http.Handler {
+func JaegerTraceMiddleware(next http.Handler, cfg tracing.JaegerConfig) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if cfg.Enabled {
 			newCtx, span := tracing.StartCustomSpan(r.Context(), trace.SpanKindServer, "httpserver", "jaegerTraceMW")

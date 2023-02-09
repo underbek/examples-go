@@ -32,7 +32,7 @@ func TestHttpServer(t *testing.T) {
 			WriteTimeout: time.Second,
 			ReadTimeout:  time.Second,
 		},
-		tracing.Config{
+		tracing.JaegerConfig{
 			Enabled: false,
 		},
 		healthCheck.Handler())

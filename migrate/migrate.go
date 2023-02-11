@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/pressly/goose/v3"
+	"github.com/underbek/examples-go/logger"
 )
 
 type options struct {
@@ -30,6 +31,12 @@ func WithDriver(driver string) OptionsFunc {
 func WithFs(fs embed.FS) OptionsFunc {
 	return func(opts *options) {
 		goose.SetBaseFS(fs)
+	}
+}
+
+func WithLogger(logger *logger.Logger) OptionsFunc {
+	return func(opts *options) {
+		goose.SetLogger(newLogger(logger))
 	}
 }
 

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"io"
 	"net/http"
-	"net/http/httptest"
 	"time"
 
 	"github.com/underbek/examples-go/buffer"
@@ -39,16 +38,8 @@ func Logging(logger *logger.Logger) func(http.Handler) http.Handler {
 
 			r.Body = io.NopCloser(bytes.NewBuffer(buf.Bytes()))
 
-			rec := httptest.NewRecorder()
-
+			rec := newWriter(w)
 			next.ServeHTTP(rec, r)
-
-			_, err = w.Write(rec.Body.Bytes())
-			if err != nil {
-				l.Error(err.Error())
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
 
 			for key, values := range rec.Header() {
 				for _, value := range values {
@@ -57,7 +48,8 @@ func Logging(logger *logger.Logger) func(http.Handler) http.Handler {
 			}
 
 			l.
-				With("response", rec.Body.String()).
+				With("code", rec.StatusCode()).
+				With("response", rec.Body()).
 				With("duration", time.Since(start)).
 				Debug("response sent")
 		})

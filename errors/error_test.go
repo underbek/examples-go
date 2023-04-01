@@ -1,81 +1,69 @@
-package errors_test
+package errors
 
 import (
 	"net/http"
 	"testing"
 
+	"github.com/magiconair/properties/assert"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/codes"
-
-	"github.com/magiconair/properties/assert"
-	errors_lib "github.com/underbek/examples-go/errors"
 )
 
 func TestError_New(t *testing.T) {
-	testWantErr := &errors_lib.Error{
-		Type: errors_lib.Other,
-		Err:  errors.New("some error"),
+	testWantErr := &Error{
+		errType: TypeUnknown,
+		message: "some error",
 	}
 
-	testGotErr := errors_lib.New(errors_lib.Other, "some error")
+	testGotErr := New(TypeUnknown, "some error")
 
-	assert.Equal(t, testGotErr.Type, testWantErr.Type)
-	assert.Equal(t, testGotErr.Err.Error(), testWantErr.Err.Error())
+	assert.Equal(t, testGotErr.errType, testWantErr.errType)
+	assert.Equal(t, testGotErr.Error(), testWantErr.Error())
+	assert.Equal(t, testGotErr.Error(), "[Unknown] some error")
 }
 
 func TestError_Wrap(t *testing.T) {
 	tests := []struct {
-		name        string
-		testWantErr *errors_lib.Error
-		testGotErr  *errors_lib.Error
+		name               string
+		testWantErrType    Type
+		testWantErrMessage string
+		testGotErr         error
 	}{
 		{
-			name: "wrap basic error",
-			testWantErr: &errors_lib.Error{
-				Type: errors_lib.Other,
-				Err:  errors.Wrap(errors.New("some error"), "TestError_Wrap error"),
-			},
-
-			testGotErr: errors_lib.Wrap(errors_lib.Other, errors.New("some error"), "TestError_Wrap error"),
+			name:               "wrap basic error",
+			testWantErrType:    TypeUnknown,
+			testWantErrMessage: "TestError_Wrap error",
+			testGotErr:         Wrap(errors.New("some error"), TypeUnknown, "TestError_Wrap error"),
 		},
 		{
-			name: "wrapf basic error",
-			testWantErr: &errors_lib.Error{
-				Type: errors_lib.Other,
-				Err:  errors.Wrapf(errors.New("some error"), "%s %s", "TestError_Wrapf", "error"),
-			},
-
-			testGotErr: errors_lib.Wrapf(
-				errors_lib.Other,
+			name:               "wrapf basic error",
+			testWantErrType:    TypeUnknown,
+			testWantErrMessage: "TestError_Wrapf error",
+			testGotErr: Wrapf(
 				errors.New("some error"),
+				TypeUnknown,
 				"%s %s",
 				"TestError_Wrapf",
 				"error",
 			),
 		},
 		{
-			name: "wrap lib error",
-			testWantErr: &errors_lib.Error{
-				Type: errors_lib.NotFound,
-				Err:  errors.Wrap(errors.New("some error"), "TestError_Wrap error"),
-			},
-
-			testGotErr: errors_lib.Wrap(
-				errors_lib.Other,
-				errors_lib.New(errors_lib.NotFound, "some error"),
+			name:               "wrap lib error",
+			testWantErrType:    TypeNotFound,
+			testWantErrMessage: "some error",
+			testGotErr: Wrap(
+				New(TypeNotFound, "some error"),
+				TypeUnknown,
 				"TestError_Wrap error",
 			),
 		},
 		{
-			name: "wrapf lib error",
-			testWantErr: &errors_lib.Error{
-				Type: errors_lib.NotFound,
-				Err:  errors.Wrapf(errors.New("some error"), "%s %s", "TestError_Wrapf", "error"),
-			},
-
-			testGotErr: errors_lib.Wrapf(
-				errors_lib.Other,
-				errors_lib.New(errors_lib.NotFound, "some error"),
+			name:               "wrapf lib error",
+			testWantErrType:    TypeNotFound,
+			testWantErrMessage: "some error",
+			testGotErr: Wrapf(
+				New(TypeNotFound, "some error"),
+				TypeUnknown,
 				"%s %s",
 				"TestError_Wrapf",
 				"error",
@@ -85,22 +73,43 @@ func TestError_Wrap(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.testGotErr.Type, tt.testWantErr.Type)
-			assert.Equal(t, tt.testGotErr.Err.Error(), tt.testWantErr.Err.Error())
+			errType, message := parseError(tt.testGotErr)
+			assert.Equal(t, tt.testWantErrType, errType)
+			assert.Equal(t, tt.testWantErrMessage, message)
 		})
 	}
 }
 
 func TestError_Error(t *testing.T) {
-	testErr := errors_lib.Error{
-		Type: errors_lib.Other,
-		Err:  errors.New("some error"),
+	tests := []struct {
+		name           string
+		testGotErr     error
+		testWantErrStr string
+	}{
+		{
+			name: "simple error",
+			testGotErr: &Error{
+				errType: TypeNotFound,
+				message: "some error",
+			},
+			testWantErrStr: "[NotFound] some error",
+		},
+		{
+			name: "with internal error",
+			testGotErr: &Error{
+				errType: TypeNotFound,
+				message: "some error",
+				err:     errors.New("Internal error"),
+			},
+			testWantErrStr: "[NotFound] some error: Internal error",
+		},
 	}
 
-	testWantErrStr := "some error"
-	testGotErrStr := testErr.Error()
-
-	assert.Equal(t, testGotErrStr, testWantErrStr)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.testGotErr.Error(), tt.testWantErrStr)
+		})
+	}
 }
 
 func TestError_ParseError(t *testing.T) {
@@ -118,79 +127,34 @@ func TestError_ParseError(t *testing.T) {
 			err:        errors.New("some error"),
 			statusCode: http.StatusInternalServerError,
 			grpcCode:   codes.Internal,
-			errMsg:     errors_lib.Internal,
+			errMsg:     "application error",
 		},
 		{
-			name: "errors_lib.Error type invalid request",
-			err: &errors_lib.Error{
-				Type: errors_lib.InvalidRequest,
-				Err:  errors.New("some error"),
+			name: "Error type invalid request",
+			err: &Error{
+				errType: TypeInvalidRequest,
+				message: "some error",
 			},
 			statusCode: http.StatusBadRequest,
 			grpcCode:   codes.InvalidArgument,
-			errMsg:     errors_lib.InvalidRequest,
+			errMsg:     "some error",
 		},
 		{
-			name: "errors_lib.Error type other error",
-			err: &errors_lib.Error{
-				Type: errors_lib.Other,
-				Err:  errors.New("some error"),
+			name: "Error type TypeUnknown error",
+			err: &Error{
+				errType: TypeUnknown,
+				message: "some error",
 			},
 			statusCode: http.StatusInternalServerError,
 			grpcCode:   codes.Internal,
-			errMsg:     errors_lib.Other,
+			errMsg:     "some error",
 		},
 	}
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			gotStatusCode, gotHttpErr := errors_lib.ParseError(tt.err)
-			gotGRPCCode, gotGRPCErr := errors_lib.ParseGRPCError(tt.err)
-
-			assert.Equal(t, gotStatusCode, tt.statusCode)
-			assert.Equal(t, gotGRPCCode, tt.grpcCode)
-			assert.Equal(t, gotHttpErr, tt.errMsg)
-			assert.Equal(t, gotGRPCErr, tt.errMsg)
-		})
-	}
-}
-
-func TestError_parseErrorType(t *testing.T) {
-	type testCase struct {
-		name       string
-		err        interface{}
-		statusCode int
-		grpcCode   codes.Code
-		errMsg     string
-	}
-
-	testCases := []testCase{
-		{
-			name: "invalid request error",
-			err: &errors_lib.Error{
-				Type: errors_lib.InvalidRequest,
-				Err:  errors.New("some invalid request error"),
-			},
-			statusCode: http.StatusBadRequest,
-			grpcCode:   codes.InvalidArgument,
-			errMsg:     errors_lib.InvalidRequest,
-		},
-		{
-			name: "other error",
-			err: &errors_lib.Error{
-				Type: errors_lib.Other,
-				Err:  errors.New("some other error"),
-			},
-			statusCode: http.StatusInternalServerError,
-			grpcCode:   codes.Internal,
-			errMsg:     errors_lib.Other,
-		},
-	}
-
-	for _, tt := range testCases {
-		t.Run(tt.name, func(t *testing.T) {
-			gotStatusCode, gotHttpErr := tt.err.(*errors_lib.Error).ParseErrorType()
-			gotGRPCCode, gotGRPCErr := tt.err.(*errors_lib.Error).ParseGRPCCode()
+			gotStatusCode, gotHttpErr := ParseHttpError(tt.err)
+			gotGRPCCode, gotGRPCErr := ParseGRPCError(tt.err)
 
 			assert.Equal(t, gotStatusCode, tt.statusCode)
 			assert.Equal(t, gotGRPCCode, tt.grpcCode)

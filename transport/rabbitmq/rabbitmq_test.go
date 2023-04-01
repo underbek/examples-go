@@ -99,7 +99,7 @@ func (s *TestSuiteRabbitMQ) Test_RabbitMQ() {
 		q, inErr := channel.QueueInspect(queue)
 		s.Assert().NoError(inErr)
 
-		return 1 == q.Messages
+		return q.Messages == 1
 	}, time.Second*10, time.Millisecond*100)
 
 	expected := msg
@@ -138,6 +138,6 @@ func (s *TestSuiteRabbitMQ) Test_RabbitMQ() {
 		q, err := channel.QueueInspect(queue)
 		s.Assert().NoError(err)
 
-		return 0 == q.Messages
+		return q.Messages == 0
 	}, time.Second*10, time.Millisecond*100)
 }

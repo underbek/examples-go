@@ -59,16 +59,15 @@ func (a *App) AddDefers(defers ...Defer) {
 	a.defers = append(a.defers, defers...)
 }
 
-func (a *App) Run() error {
+func (a *App) Run(ctx context.Context) error {
 	a.Logger.Info("Starting application")
 
-	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	ctx, cancel := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
 	group, ctx := errgroup.WithContext(ctx)
 
 	// start metrics
-
 	group.Go(func() error {
 		if err := a.MetricsServer.Run(ctx); err != nil {
 			a.Logger.WithError(err).Error("metrics server")

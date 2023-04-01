@@ -3,30 +3,30 @@ package grpcserver
 import (
 	"context"
 
-	health_api "google.golang.org/grpc/health/grpc_health_v1"
+	healthApi "google.golang.org/grpc/health/grpc_health_v1"
 )
 
-type healthserver struct {
-	srv    health_api.HealthServer
-	checks []checkHealtsFunc
+type healthServer struct {
+	srv    healthApi.HealthServer
+	checks []checkHealthFunc
 }
 
-func newHealthserver(srv health_api.HealthServer, checks ...checkHealtsFunc) *healthserver {
-	return &healthserver{srv: srv, checks: checks}
+func newHealthServer(srv healthApi.HealthServer, checks ...checkHealthFunc) *healthServer {
+	return &healthServer{srv: srv, checks: checks}
 }
 
-type checkHealtsFunc func(ctx context.Context) bool
+type checkHealthFunc func(ctx context.Context) bool
 
-func (h *healthserver) Check(ctx context.Context, request *health_api.HealthCheckRequest) (*health_api.HealthCheckResponse, error) {
+func (h *healthServer) Check(ctx context.Context, request *healthApi.HealthCheckRequest) (*healthApi.HealthCheckResponse, error) {
 	for _, f := range h.checks {
 		if !f(ctx) {
-			return &health_api.HealthCheckResponse{Status: health_api.HealthCheckResponse_NOT_SERVING}, nil
+			return &healthApi.HealthCheckResponse{Status: healthApi.HealthCheckResponse_NOT_SERVING}, nil
 		}
 	}
 
-	return &health_api.HealthCheckResponse{Status: health_api.HealthCheckResponse_SERVING}, nil
+	return &healthApi.HealthCheckResponse{Status: healthApi.HealthCheckResponse_SERVING}, nil
 }
 
-func (h *healthserver) Watch(request *health_api.HealthCheckRequest, server health_api.Health_WatchServer) error {
+func (h *healthServer) Watch(request *healthApi.HealthCheckRequest, server healthApi.Health_WatchServer) error {
 	return h.srv.Watch(request, server)
 }

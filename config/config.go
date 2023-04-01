@@ -18,9 +18,10 @@ type App struct {
 }
 
 type HTTPServer struct {
-	Port         int           `env:"HTTP_SERVER_PORT" envDefault:"8181"`
-	WriteTimeout time.Duration `env:"HTTP_WRITE_TIMEOUT" envDefault:"15s"`
-	ReadTimeout  time.Duration `env:"HTTP_READ_TIMEOUT" envDefault:"15s"`
+	Port           int           `env:"HTTP_SERVER_PORT" envDefault:"8181"`
+	WriteTimeout   time.Duration `env:"HTTP_WRITE_TIMEOUT" envDefault:"15s"`
+	ReadTimeout    time.Duration `env:"HTTP_READ_TIMEOUT" envDefault:"15s"`
+	ShowHealthLogs bool          `env:"SHOW_HEALTH_LOGS" envDefault:"false"`
 }
 
 type Storage struct {

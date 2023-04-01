@@ -21,7 +21,7 @@ type HTTPServer struct {
 
 func New(logger *logger.Logger, cfgServer config.HTTPServer, handler http.Handler) *HTTPServer {
 	server := &http.Server{
-		Handler:      mw.JaegerTraceMiddleware(mw.Logging(logger)(handler)),
+		Handler:      mw.JaegerTraceMiddleware(mw.Logging(logger, cfgServer.ShowHealthLogs)(handler)),
 		Addr:         fmt.Sprintf(":%d", cfgServer.Port),
 		WriteTimeout: cfgServer.WriteTimeout,
 		ReadTimeout:  cfgServer.ReadTimeout,

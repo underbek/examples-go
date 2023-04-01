@@ -24,11 +24,17 @@ func traceIDToLoggerCtxInterceptor() grpc.UnaryServerInterceptor {
 		span := trace.SpanFromContext(ctx)
 		if span.IsRecording() {
 			ctx = logger.AddCtxValue(ctx, tracing.TraceID, span.SpanContext().TraceID())
+			ctx = logger.AddCtxValue(ctx, tracing.SpanID, span.SpanContext().SpanID())
+
 			// adds traceID to the request result
 			ctxzap.AddFields(ctx, zap.Any(tracing.TraceID, span.SpanContext().TraceID()))
-			// adds traceID to the request payload
+			// adds spanID to the request result
+			ctxzap.AddFields(ctx, zap.Any(tracing.SpanID, span.SpanContext().SpanID()))
+
+			// adds traceID and spanID to the request payload
 			tags := grpcCtxTags.NewTags()
 			tags.Set(tracing.TraceID, span.SpanContext().TraceID())
+			tags.Set(tracing.SpanID, span.SpanContext().SpanID())
 
 			ctx = grpcCtxTags.SetInContext(ctx, tags)
 		}

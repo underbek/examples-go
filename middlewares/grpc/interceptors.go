@@ -2,6 +2,7 @@ package grpcmiddleware
 
 import (
 	"context"
+	"strings"
 
 	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpcZap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
@@ -16,9 +17,13 @@ import (
 	"google.golang.org/grpc/codes"
 )
 
-func UnaryInterceptors(logger *logger.Logger) grpc.ServerOption {
-	grpcPrometheus.EnableHandlingTimeHistogram()
+func isHideHealthCheckConditions(path string, showHealthCheck bool) bool {
+	//if full requested method contains grpc health check path and param showHealthCheck is false
+	return strings.Contains(path, "grpc.health.v1.Health") && !showHealthCheck
+}
 
+func UnaryInterceptors(logger *logger.Logger, showHealthCheck bool) grpc.ServerOption {
+	grpcPrometheus.EnableHandlingTimeHistogram()
 	return grpc.UnaryInterceptor(
 		grpcMiddleware.ChainUnaryServer(
 			trace.UnaryServerInterceptor(
@@ -38,11 +43,18 @@ func UnaryInterceptors(logger *logger.Logger) grpc.ServerOption {
 				grpcZap.WithLevels(func(code codes.Code) zapcore.Level {
 					return zapcore.DebugLevel
 				}),
+				grpcZap.WithDecider(func(fullMethodName string, err error) bool {
+					return !isHideHealthCheckConditions(fullMethodName, showHealthCheck)
+				}),
 			),
 			traceIDToLoggerCtxInterceptor(),
 			grpcZap.PayloadUnaryServerInterceptor(
 				logger.Named("grpc-payload").Internal().(*zap.Logger),
 				func(ctx context.Context, fullMethodName string, servingObject interface{}) bool {
+					if isHideHealthCheckConditions(fullMethodName, showHealthCheck) {
+						return false
+					}
+
 					return logger.Internal().(*zap.Logger).Core().Enabled(zapcore.DebugLevel)
 				},
 			),

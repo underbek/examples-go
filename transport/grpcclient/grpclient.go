@@ -7,8 +7,8 @@ import (
 	"github.com/underbek/examples-go/logger"
 	trace "go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 
-	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
-	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
+	grpcZap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
+	grpcPrometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
@@ -22,14 +22,14 @@ func NewConnection(logger *logger.Logger, address string) (*grpc.ClientConn, err
 		grpc.WithUnaryInterceptor(trace.UnaryClientInterceptor()),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithChainUnaryInterceptor(
-			grpc_prometheus.UnaryClientInterceptor,
-			grpc_zap.UnaryClientInterceptor(
+			grpcPrometheus.UnaryClientInterceptor,
+			grpcZap.UnaryClientInterceptor(
 				logger.Named("grpc-client").Internal().(*zap.Logger),
-				grpc_zap.WithLevels(func(code codes.Code) zapcore.Level {
+				grpcZap.WithLevels(func(code codes.Code) zapcore.Level {
 					return zapcore.DebugLevel
 				}),
 			),
-			grpc_zap.PayloadUnaryClientInterceptor(
+			CustomPayloadUnaryClientInterceptor(
 				logger.Named("grpc-client-payload").Internal().(*zap.Logger),
 				func(ctx context.Context, fullMethodName string) bool {
 					return logger.Internal().(*zap.Logger).Core().Enabled(zapcore.DebugLevel)

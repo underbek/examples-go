@@ -16,7 +16,10 @@ func JaegerTraceMiddleware(next http.Handler) http.Handler {
 		defer span.End()
 		if span.IsRecording() {
 			newCtx = logger.AddCtxValue(newCtx, tracing.TraceID, span.SpanContext().TraceID().String())
+			newCtx = logger.AddCtxValue(newCtx, tracing.SpanID, span.SpanContext().SpanID().String())
+
 			ctxzap.AddFields(newCtx, zap.Any(tracing.TraceID, span.SpanContext().TraceID()))
+			ctxzap.AddFields(newCtx, zap.Any(tracing.SpanID, span.SpanContext().SpanID()))
 
 			r = r.WithContext(newCtx)
 		}

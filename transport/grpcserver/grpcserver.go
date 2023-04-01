@@ -16,7 +16,8 @@ import (
 )
 
 type Config struct {
-	Port int `env:"GRPC_SERVER_PORT" envDefault:"8080"`
+	Port           int  `env:"GRPC_SERVER_PORT" envDefault:"8080"`
+	ShowHealthLogs bool `env:"SHOW_HEALTH_LOGS" envDefault:"false"`
 }
 
 type GRPCServer struct {
@@ -25,16 +26,16 @@ type GRPCServer struct {
 	serverPort int
 }
 
-func New(logger *logger.Logger, cfgServer Config, checks ...checkHealtsFunc) *GRPCServer {
+func New(logger *logger.Logger, cfgServer Config, checks ...checkHealthFunc) *GRPCServer {
 
 	gRPCServer := grpc.NewServer(
-		mw.UnaryInterceptors(logger),
+		mw.UnaryInterceptors(logger, cfgServer.ShowHealthLogs),
 	)
 
 	reflection.Register(gRPCServer)
 
 	baseHealthServer := health.NewServer()
-	healthServer := newHealthserver(baseHealthServer, checks...)
+	healthServer := newHealthServer(baseHealthServer, checks...)
 	healthApi.RegisterHealthServer(gRPCServer, healthServer)
 
 	return &GRPCServer{

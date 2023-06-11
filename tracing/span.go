@@ -3,8 +3,9 @@ package tracing
 import (
 	"context"
 
-	"github.com/underbek/examples-go/logger"
 	"go.opentelemetry.io/otel/trace"
+
+	"github.com/underbek/examples-go/logger"
 )
 
 const (
@@ -45,6 +46,28 @@ func StartSpan(
 	}
 
 	return ctx, span
+}
+
+func PutTraceInfoIntoContext(ctx context.Context, traceID [16]byte, spanID [8]byte) context.Context {
+	spanCtx := trace.NewSpanContext(
+		trace.SpanContextConfig{
+			TraceID: traceID,
+			SpanID:  spanID,
+		},
+	)
+
+	ctx = trace.ContextWithSpanContext(ctx, spanCtx)
+
+	if trace.SpanFromContext(ctx).IsRecording() {
+		ctx = logger.AddCtxValue(ctx, TraceID, traceID)
+		ctx = logger.AddCtxValue(ctx, SpanID, spanID)
+	}
+
+	return ctx
+}
+
+func GetSpanFromContext(ctx context.Context) trace.Span {
+	return trace.SpanFromContext(ctx)
 }
 
 func GetSpanContextFromContext(ctx context.Context) trace.SpanContext {

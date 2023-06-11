@@ -24,7 +24,7 @@ func CustomPayloadUnaryClientInterceptor(logger *zap.Logger, decider grpc_loggin
 		if !decider(ctx, method) {
 			return invoker(ctx, method, req, reply, cc, opts...)
 		}
-		logEntry := logger.With(newClientLoggerFields(ctx, method)...)
+		logEntry := logger.With(newClientLoggerFields(method)...)
 		// ATTENTION!!! here is the difference from original function (is didn't have data from context at logger, now it have)
 		logEntry = logEntry.With(ctxzap.TagsToFields(ctx)...)
 		logProtoMessageAsJson(logEntry, req, "grpc.request.content", "client request payload logged as grpc.request.content")
@@ -36,7 +36,7 @@ func CustomPayloadUnaryClientInterceptor(logger *zap.Logger, decider grpc_loggin
 	}
 }
 
-func newClientLoggerFields(ctx context.Context, fullMethodString string) []zapcore.Field {
+func newClientLoggerFields(fullMethodString string) []zapcore.Field {
 	service := path.Dir(fullMethodString)[1:]
 	method := path.Base(fullMethodString)
 	return []zapcore.Field{
@@ -49,7 +49,7 @@ func newClientLoggerFields(ctx context.Context, fullMethodString string) []zapco
 
 func logProtoMessageAsJson(logger *zap.Logger, pbMsg interface{}, key string, msg string) {
 	if p, ok := pbMsg.(proto.Message); ok {
-		logger.Check(zapcore.InfoLevel, msg).Write(zap.Object(key, &jsonpbObjectMarshaler{pb: p}))
+		logger.Check(zapcore.DebugLevel, msg).Write(zap.Object(key, &jsonpbObjectMarshaler{pb: p}))
 	}
 }
 

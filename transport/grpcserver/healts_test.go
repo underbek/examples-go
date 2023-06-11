@@ -7,10 +7,11 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"github.com/underbek/examples-go/logger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	health_api "google.golang.org/grpc/health/grpc_health_v1"
+	healthApi "google.golang.org/grpc/health/grpc_health_v1"
+
+	"github.com/underbek/examples-go/logger"
 )
 
 func TestHealths(t *testing.T) {
@@ -43,22 +44,22 @@ func TestHealths(t *testing.T) {
 
 	defer con.Close()
 
-	hsrv := health_api.NewHealthClient(con)
+	hsrv := healthApi.NewHealthClient(con)
 
-	var res *health_api.HealthCheckResponse
+	var res *healthApi.HealthCheckResponse
 	require.Eventually(t, func() bool {
-		res, err = hsrv.Check(ctx, &health_api.HealthCheckRequest{})
+		res, err = hsrv.Check(ctx, &healthApi.HealthCheckRequest{})
 		return err == nil
 	}, time.Second*30, time.Millisecond*100)
 
 	require.NoError(t, err)
-	require.True(t, res.Status == health_api.HealthCheckResponse_SERVING)
+	require.True(t, res.Status == healthApi.HealthCheckResponse_SERVING)
 
 	mx.Lock()
 	data = false
 	mx.Unlock()
 
-	res, err = hsrv.Check(ctx, &health_api.HealthCheckRequest{})
+	res, err = hsrv.Check(ctx, &healthApi.HealthCheckRequest{})
 	require.NoError(t, err)
-	require.True(t, res.Status == health_api.HealthCheckResponse_NOT_SERVING)
+	require.True(t, res.Status == healthApi.HealthCheckResponse_NOT_SERVING)
 }

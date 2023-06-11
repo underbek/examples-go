@@ -6,12 +6,18 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/underbek/examples-go/config"
-	"github.com/underbek/examples-go/logger"
 	"golang.org/x/sync/errgroup"
 
+	"github.com/underbek/examples-go/logger"
 	mw "github.com/underbek/examples-go/middlewares/http"
 )
+
+type Config struct {
+	ShowHealthLogs bool          `env:"SHOW_HEALTH_LOGS" envDefault:"false"`
+	Port           int           `env:"HTTP_SERVER_PORT" envDefault:"8181"`
+	WriteTimeout   time.Duration `env:"HTTP_WRITE_TIMEOUT" envDefault:"15s"`
+	ReadTimeout    time.Duration `env:"HTTP_READ_TIMEOUT" envDefault:"15s"`
+}
 
 type HTTPServer struct {
 	logger     *logger.Logger
@@ -19,7 +25,7 @@ type HTTPServer struct {
 	serverPort int
 }
 
-func New(logger *logger.Logger, cfgServer config.HTTPServer, handler http.Handler) *HTTPServer {
+func New(logger *logger.Logger, cfgServer Config, handler http.Handler) *HTTPServer {
 	server := &http.Server{
 		Handler:      mw.JaegerTraceMiddleware(mw.Logging(logger, cfgServer.ShowHealthLogs)(handler)),
 		Addr:         fmt.Sprintf(":%d", cfgServer.Port),

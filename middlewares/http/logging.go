@@ -33,7 +33,7 @@ func Logging(logger *logger.Logger, showHealthLogs bool) func(http.Handler) http
 				With("addr", r.RemoteAddr).
 				With("user_agent", r.UserAgent())
 
-			buf := buffer.NewMemoryBuffer(1024)
+			buf := buffer.NewMemoryBuffer()
 
 			_, err := io.Copy(buf, r.Body)
 			if err != nil {

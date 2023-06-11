@@ -13,8 +13,8 @@ type ConsumerConfig struct {
 	// Brokers is a list of kafka nodes(foo.wb.ru:9092)
 	Brokers []string `env:"KAFKA_BROKERS"`
 
-	// DialTimeout is the maximum amount of time a dial will wait for
-	DialTimeout time.Duration `env:"KAFKA_DIAL_TIMEOUT"`
+	// ConnTimeout is the maximum amount of time a dial will wait for
+	ConnTimeout time.Duration `env:"KAFKA_CONNECTION_TIMEOUT"`
 
 	// CommitInterval indicates the interval at which offsets are committed to
 	// the broker.  If 0, commits will be handled synchronously.
@@ -52,6 +52,7 @@ type ConsumerConfig struct {
 }
 
 type ProducerConfig struct {
+	AppName                string
 	Brokers                []string
 	Topic                  string
 	Balancer               kafka.Balancer
@@ -63,6 +64,7 @@ type ProducerConfig struct {
 	BatchTimeout           time.Duration
 	ReadTimeout            time.Duration
 	WriteTimeout           time.Duration
+	ConnTimeout            time.Duration
 	RequiredAcks           kafka.RequiredAcks
 	Async                  bool
 	Compression            kafka.Compression

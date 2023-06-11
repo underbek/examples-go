@@ -16,8 +16,9 @@ import (
 )
 
 type Config struct {
-	Port           int  `env:"GRPC_SERVER_PORT" envDefault:"8080"`
-	ShowHealthLogs bool `env:"SHOW_HEALTH_LOGS" envDefault:"false"`
+	ShowHealthLogs  bool `env:"SHOW_HEALTH_LOGS" envDefault:"false"`
+	ShowPayloadLogs bool `env:"SHOW_PAYLOAD_LOGS" envDefault:"true"`
+	Port            int  `env:"GRPC_SERVER_PORT" envDefault:"8080"`
 }
 
 type GRPCServer struct {
@@ -29,7 +30,7 @@ type GRPCServer struct {
 func New(logger *logger.Logger, cfgServer Config, checks ...checkHealthFunc) *GRPCServer {
 
 	gRPCServer := grpc.NewServer(
-		mw.UnaryInterceptors(logger, cfgServer.ShowHealthLogs),
+		mw.UnaryInterceptors(logger, cfgServer.ShowHealthLogs, cfgServer.ShowPayloadLogs),
 	)
 
 	reflection.Register(gRPCServer)

@@ -6,12 +6,13 @@ import (
 	"fmt"
 
 	amqp "github.com/rabbitmq/amqp091-go"
-	"github.com/underbek/examples-go/logger"
-	"github.com/underbek/examples-go/tracing"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
+
+	"github.com/underbek/examples-go/logger"
+	"github.com/underbek/examples-go/tracing"
 )
 
 type HandleFunc = func(ctx context.Context, msg amqp.Delivery)
@@ -27,11 +28,24 @@ type consumer struct {
 	queueName string
 }
 
-func NewConsumer(logger *logger.Logger, conn Connection, qd QueueDeclare, qb QueueBind) (Consumer, error) {
+func NewConsumer(logger *logger.Logger, conn Connection, qd QueueDeclare, qb QueueBind, ed ExchangeDeclare) (Consumer, error) {
 	ch, err := conn.Channel()
 	if err != nil {
 		return nil, err
 	}
+
+	if err = ch.ExchangeDeclare(
+		ed.Exchange,
+		string(ed.Type),
+		ed.Durable,
+		ed.AutoDelete,
+		ed.Internal,
+		ed.NoWait,
+		ed.Arguments,
+	); err != nil {
+		return nil, fmt.Errorf("exchange declare: %w", err)
+	}
+	logger.With("ExchangeDeclare", ed).Info("exchange declared")
 
 	_, err = ch.QueueDeclare(
 		qd.Queue,

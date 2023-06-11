@@ -10,7 +10,6 @@ import (
 
 	health "github.com/hellofresh/health-go/v5"
 	"github.com/stretchr/testify/require"
-	"github.com/underbek/examples-go/config"
 	"github.com/underbek/examples-go/logger"
 )
 
@@ -26,7 +25,7 @@ func TestHttpServer(t *testing.T) {
 
 	srv := New(
 		l,
-		config.HTTPServer{
+		Config{
 			Port:         8080,
 			WriteTimeout: time.Second,
 			ReadTimeout:  time.Second,

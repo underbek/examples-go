@@ -7,8 +7,9 @@ import (
 
 	"github.com/segmentio/kafka-go"
 	"github.com/stretchr/testify/suite"
+
 	"github.com/underbek/examples-go/logger"
-	testcontainer "github.com/underbek/examples-go/testcontainers"
+	testContainers "github.com/underbek/examples-go/testcontainers"
 )
 
 const (
@@ -20,16 +21,16 @@ const (
 
 type TestSuiteKafkaTransport struct {
 	suite.Suite
-	container *testcontainer.KafkaContainer
+	container *testContainers.KafkaContainer
 	conn      *kafka.Conn
 }
 
 func (s *TestSuiteKafkaTransport) SetupSuite() {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*2)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*10)
 	defer cancel()
 
 	var err error
-	s.container, err = testcontainer.NewKafkaContainer(ctx)
+	s.container, err = testContainers.NewKafkaContainer(ctx)
 	s.Require().NoError(err)
 
 	s.conn, err = kafka.DialLeader(context.Background(), "tcp", s.container.GetBrokers()[0], topic, partition)
@@ -54,11 +55,12 @@ func (s *TestSuiteKafkaTransport) Test_Kafka() {
 	lg, err := logger.New(true)
 	s.Require().NoError(err)
 
-	producer := NewProducer(lg, ProducerConfig{
+	producer, err := NewProducer(lg, ProducerConfig{
 		Brokers:                s.container.GetBrokers(),
 		Topic:                  topic,
 		AllowAutoTopicCreation: true,
 	})
+	s.Require().NoError(err)
 	defer func() { s.Assert().NoError(producer.Close()) }()
 
 	msg := kafka.Message{

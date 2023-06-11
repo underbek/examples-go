@@ -8,8 +8,9 @@ import (
 
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/stretchr/testify/suite"
+
 	"github.com/underbek/examples-go/logger"
-	testcontainer "github.com/underbek/examples-go/testcontainers"
+	testContainers "github.com/underbek/examples-go/testcontainers"
 )
 
 const (
@@ -20,16 +21,16 @@ const (
 
 type TestSuiteRabbitMQ struct {
 	suite.Suite
-	container *testcontainer.RabbitMQContainer
+	container *testContainers.RabbitMQContainer
 	conn      Connection
 }
 
 func (s *TestSuiteRabbitMQ) SetupSuite() {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*2)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*10)
 	defer cancel()
 
 	var err error
-	s.container, err = testcontainer.NewRabbitMQContainer(ctx)
+	s.container, err = testContainers.NewRabbitMQContainer(ctx)
 	s.Require().NoError(err)
 
 	s.conn, err = NewConnection(s.container.GetDSN())
@@ -70,6 +71,10 @@ func (s *TestSuiteRabbitMQ) Test_RabbitMQ() {
 			Exchange:   exchange,
 			RoutingKey: key,
 		},
+		ExchangeDeclare{
+			Exchange: exchange,
+			Type:     ExchangeTypeDirect,
+		},
 	)
 	s.Require().NoError(err)
 
@@ -99,7 +104,7 @@ func (s *TestSuiteRabbitMQ) Test_RabbitMQ() {
 		q, inErr := channel.QueueInspect(queue)
 		s.Assert().NoError(inErr)
 
-		return q.Messages == 1
+		return 1 == q.Messages
 	}, time.Second*10, time.Millisecond*100)
 
 	expected := msg
@@ -138,6 +143,6 @@ func (s *TestSuiteRabbitMQ) Test_RabbitMQ() {
 		q, err := channel.QueueInspect(queue)
 		s.Assert().NoError(err)
 
-		return q.Messages == 0
+		return 0 == q.Messages
 	}, time.Second*10, time.Millisecond*100)
 }

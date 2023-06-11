@@ -20,26 +20,37 @@ type Transaction interface {
 	ExtContext
 }
 
+type Config struct {
+	DSN string `env:"POSTGRES_DSN" valid:"required"`
+}
+
 type Storage interface {
 	Close()
 	Begin(ctx context.Context, opts *pgx.TxOptions) (Transaction, error)
 	ExtContext
 }
 
+type Option = func(pool *pgxpool.Pool, st Storage) Storage
+
 type storage struct {
 	*pgxpool.Pool
 }
 
-func New(ctx context.Context, dataSource string) (Storage, error) {
+func New(ctx context.Context, dataSource string, opts ...Option) (Storage, error) {
 	db, err := pgxpool.New(ctx, dataSource)
 	if err != nil {
 		return nil, err
 	}
 
-	return &storage{
-		db,
-	}, nil
+	var st Storage = &storage{
+		Pool: db,
+	}
 
+	for _, opt := range opts {
+		st = opt(db, st)
+	}
+
+	return st, nil
 }
 
 func (s *storage) Begin(ctx context.Context, opts *pgx.TxOptions) (Transaction, error) {

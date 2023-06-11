@@ -7,12 +7,13 @@ import (
 	"time"
 
 	"github.com/segmentio/kafka-go"
-	"github.com/underbek/examples-go/logger"
-	"github.com/underbek/examples-go/tracing"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
+
+	"github.com/underbek/examples-go/logger"
+	"github.com/underbek/examples-go/tracing"
 )
 
 type Handler func(ctx context.Context, msg kafka.Message) error
@@ -32,7 +33,7 @@ type consumer struct {
 func NewConsumer(logger *logger.Logger, cfg ConsumerConfig) (Consumer, error) {
 	dialer := &kafka.Dialer{
 		ClientID:  cfg.AppName,
-		Timeout:   cfg.DialTimeout,
+		Timeout:   cfg.ConnTimeout,
 		DualStack: true,
 	}
 	if err := checkConn(dialer, cfg.Brokers); err != nil {

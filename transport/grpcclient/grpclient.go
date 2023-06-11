@@ -2,25 +2,43 @@ package grpcclient
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
-
-	"github.com/underbek/examples-go/logger"
-	trace "go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 
 	grpcZap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
 	grpcPrometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
+	trace "go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
+
+	"github.com/underbek/examples-go/logger"
 )
 
-func NewConnection(logger *logger.Logger, address string) (*grpc.ClientConn, error) {
+type Config struct {
+	ShowPayloadLogs bool   `env:"SHOW_PAYLOAD_LOGS" envDefault:"true"`
+	DSN             string `env:"_DSN" valid:"required"`
+	WithTLS         bool   `env:"_WITH_TLS" envDefault:"false"`
+}
+
+func NewConnection(logger *logger.Logger, cfg Config) (*grpc.ClientConn, error) {
+	var transportCredentials credentials.TransportCredentials
+	if cfg.WithTLS {
+		transportCredentials = credentials.NewTLS(&tls.Config{
+			MinVersion:         tls.VersionTLS12,
+			InsecureSkipVerify: false,
+		})
+	} else {
+		transportCredentials = insecure.NewCredentials()
+	}
+
 	opts := []grpc.DialOption{
 		grpc.WithStreamInterceptor(trace.StreamClientInterceptor()),
 		grpc.WithUnaryInterceptor(trace.UnaryClientInterceptor()),
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithTransportCredentials(transportCredentials),
 		grpc.WithChainUnaryInterceptor(
 			grpcPrometheus.UnaryClientInterceptor,
 			grpcZap.UnaryClientInterceptor(
@@ -32,14 +50,15 @@ func NewConnection(logger *logger.Logger, address string) (*grpc.ClientConn, err
 			CustomPayloadUnaryClientInterceptor(
 				logger.Named("grpc-client-payload").Internal().(*zap.Logger),
 				func(ctx context.Context, fullMethodName string) bool {
-					return logger.Internal().(*zap.Logger).Core().Enabled(zapcore.DebugLevel)
+					return cfg.ShowPayloadLogs &&
+						logger.Internal().(*zap.Logger).Core().Enabled(zapcore.DebugLevel)
 				},
 			),
 		),
 	}
 
 	conn, err := grpc.Dial(
-		address,
+		cfg.DSN,
 		opts...,
 	)
 

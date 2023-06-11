@@ -5,12 +5,12 @@ import (
 	"fmt"
 
 	amqp "github.com/rabbitmq/amqp091-go"
-	"github.com/underbek/examples-go/logger"
-	"github.com/underbek/examples-go/tracing"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
-
 	"golang.org/x/exp/maps"
+
+	"github.com/underbek/examples-go/logger"
+	"github.com/underbek/examples-go/tracing"
 )
 
 type Producer interface {

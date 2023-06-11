@@ -7,15 +7,12 @@ import (
 )
 
 type memory struct {
-	data  []byte
-	pos   int64
-	limit int
+	data []byte
+	pos  int64
 }
 
-var ErrMemoryLimit = errors.New("memory limit is not enough")
-
-func NewMemoryBuffer(limit int) *memory {
-	return &memory{limit: limit}
+func NewMemoryBuffer() *memory {
+	return &memory{}
 }
 
 func (m *memory) Len() int {
@@ -69,9 +66,6 @@ func (m *memory) Pos() int64 {
 }
 
 func (m *memory) Write(p []byte) (n int, err error) {
-	if len(p)+len(m.data) > m.limit {
-		return 0, errors.Wrap(ErrMemoryLimit, "Memory: can't write cause memory limit is too small")
-	}
 	m.data = append(m.data, p...)
 	m.pos += int64(len(m.data))
 	return len(p), nil

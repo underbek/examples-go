@@ -17,12 +17,12 @@ import (
 	"google.golang.org/grpc/codes"
 )
 
-func isHideHealthCheckConditions(path string, showHealthCheck bool) bool {
-	//if full requested method contains grpc health check path and param showHealthCheck is false
-	return strings.Contains(path, "grpc.health.v1.Health") && !showHealthCheck
+func showHealthCheckConditions(path string, showHealthCheck bool) bool {
+	//if param showHealthCheck is true or full requested method does not contain grpc health check path
+	return showHealthCheck || !strings.Contains(path, "grpc.health.v1.Health")
 }
 
-func UnaryInterceptors(logger *logger.Logger, showHealthCheck bool) grpc.ServerOption {
+func UnaryInterceptors(logger *logger.Logger, showHealthCheck, showPayloadLogs bool) grpc.ServerOption {
 	grpcPrometheus.EnableHandlingTimeHistogram()
 	return grpc.UnaryInterceptor(
 		grpcMiddleware.ChainUnaryServer(
@@ -44,18 +44,16 @@ func UnaryInterceptors(logger *logger.Logger, showHealthCheck bool) grpc.ServerO
 					return zapcore.DebugLevel
 				}),
 				grpcZap.WithDecider(func(fullMethodName string, err error) bool {
-					return !isHideHealthCheckConditions(fullMethodName, showHealthCheck)
+					return showHealthCheckConditions(fullMethodName, showHealthCheck)
 				}),
 			),
 			traceIDToLoggerCtxInterceptor(),
 			grpcZap.PayloadUnaryServerInterceptor(
 				logger.Named("grpc-payload").Internal().(*zap.Logger),
 				func(ctx context.Context, fullMethodName string, servingObject interface{}) bool {
-					if isHideHealthCheckConditions(fullMethodName, showHealthCheck) {
-						return false
-					}
-
-					return logger.Internal().(*zap.Logger).Core().Enabled(zapcore.DebugLevel)
+					return showPayloadLogs &&
+						showHealthCheckConditions(fullMethodName, showHealthCheck) &&
+						logger.Internal().(*zap.Logger).Core().Enabled(zapcore.DebugLevel)
 				},
 			),
 		),

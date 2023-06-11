@@ -52,11 +52,11 @@ func Run(dsn string, opts ...OptionsFunc) error {
 		curDriverName = o.driverName
 	}
 
-	sqlDb, err := sql.Open(curDriverName, dsn)
+	sqlDB, err := sql.Open(curDriverName, dsn)
 	if err != nil {
 		return fmt.Errorf("open database connection: %w", err)
 	}
-	defer func() { _ = sqlDb.Close() }()
+	defer func() { _ = sqlDB.Close() }()
 
 	// migrations default path is 'migrations' directory
 	// if you want to change it, use option WithPath
@@ -65,7 +65,7 @@ func Run(dsn string, opts ...OptionsFunc) error {
 		curPath = o.path
 	}
 
-	if err = goose.Up(sqlDb, curPath); err != nil {
+	if err = goose.Up(sqlDB, curPath); err != nil {
 		return fmt.Errorf("up migrations: %w", err)
 	}
 

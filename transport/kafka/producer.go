@@ -3,12 +3,14 @@ package kafka
 import (
 	"context"
 	"fmt"
+	"net"
 
 	"github.com/segmentio/kafka-go"
-	"github.com/underbek/examples-go/logger"
-	"github.com/underbek/examples-go/tracing"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
+
+	"github.com/underbek/examples-go/logger"
+	"github.com/underbek/examples-go/tracing"
 )
 
 type Producer interface {
@@ -21,7 +23,26 @@ type producer struct {
 	writer *kafka.Writer
 }
 
-func NewProducer(logger *logger.Logger, cfg ProducerConfig) Producer {
+func NewProducer(logger *logger.Logger, cfg ProducerConfig) (Producer, error) {
+	conn, err := (&kafka.Dialer{
+		ClientID:  cfg.AppName,
+		Timeout:   cfg.ConnTimeout,
+		DualStack: true,
+	}).DialLeader(
+		context.Background(),
+		"tcp",
+		cfg.Brokers[0],
+		cfg.Topic,
+		0,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = conn.Close(); err != nil {
+		return nil, err
+	}
+
 	writer := &kafka.Writer{
 		Addr:                   kafka.TCP(cfg.Brokers...),
 		Topic:                  cfg.Topic,
@@ -38,12 +59,18 @@ func NewProducer(logger *logger.Logger, cfg ProducerConfig) Producer {
 		Async:                  cfg.Async,
 		Compression:            cfg.Compression,
 		AllowAutoTopicCreation: cfg.AllowAutoTopicCreation,
+		Transport: &kafka.Transport{
+			ClientID: cfg.AppName,
+			Dial: (&net.Dialer{
+				Timeout: cfg.ConnTimeout,
+			}).DialContext,
+		},
 	}
 
 	return &producer{
 		logger: logger,
 		writer: writer,
-	}
+	}, nil
 }
 
 func (p *producer) Close() error {

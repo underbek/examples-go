@@ -1,6 +1,10 @@
 package rabbitmq
 
-import amqp "github.com/rabbitmq/amqp091-go"
+import (
+	"time"
+
+	amqp "github.com/rabbitmq/amqp091-go"
+)
 
 type ExchangeType string
 
@@ -19,6 +23,9 @@ type QueueDeclare struct {
 	AutoDelete bool
 	NoWait     bool
 	Arguments  amqp.Table
+	TTL        *time.Duration
+	MessageTTL *time.Duration
+	DLX        string
 }
 
 type QueueBind struct {

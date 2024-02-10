@@ -44,6 +44,8 @@ func WithRMQTag(tag string) RabbitMQContainerOption {
 
 // NewRabbitMQContainer creates and starts a RabbitMQ container.
 func NewRabbitMQContainer(ctx context.Context, opts ...RabbitMQContainerOption) (*RabbitMQContainer, error) {
+	registryCred()
+
 	const (
 		rmqImage = "heidiks/rabbitmq-delayed-message-exchange"
 		rmqPort  = "5672"
@@ -59,7 +61,7 @@ func NewRabbitMQContainer(ctx context.Context, opts ...RabbitMQContainerOption) 
 		opt(&config)
 	}
 
-	containerPort := rmqPort + "/tcp"
+	containerPort := fmt.Sprintf("%s/tcp", rmqPort)
 
 	// Build testcontainer request
 	req := testcontainers.GenericContainerRequest{
@@ -69,8 +71,11 @@ func NewRabbitMQContainer(ctx context.Context, opts ...RabbitMQContainerOption) 
 				//"5672:5672",   // for local development, do not remove it pls
 				//"15672:15672", // for local development, do not remove it pls
 			},
-			Image:      fmt.Sprintf("%s:%s", rmqImage, config.ImageTag),
-			WaitingFor: wait.ForListeningPort(nat.Port(containerPort)),
+			Image: fmt.Sprintf("%s:%s", rmqImage, config.ImageTag),
+			WaitingFor: wait.ForAll(
+				wait.ForLog(".*Server startup complete.*").AsRegexp(),
+				wait.ForListeningPort(nat.Port(containerPort)),
+			),
 		},
 		Started: true,
 	}

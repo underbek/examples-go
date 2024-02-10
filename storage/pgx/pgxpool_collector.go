@@ -35,6 +35,9 @@ type pgxPoolCollector struct {
 // The dbName parameter must not be empty.
 func newPgxPoolCollector(db *pgxpool.Pool) *pgxPoolCollector {
 	dbName := db.Config().ConnConfig.Database
+	buckets := make([]float64, 0)
+	buckets = append(buckets, prometheus.DefBuckets...)
+	buckets = append(buckets, 20, 40, 60, 80, 100, 120)
 
 	newGauge := func(name, help string) prometheus.Gauge {
 		return prometheus.NewGauge(
@@ -107,7 +110,7 @@ func newPgxPoolCollector(db *pgxpool.Pool) *pgxPoolCollector {
 				Name:        "query_executed_seconds",
 				Help:        "Histogram of query latency (seconds) of db that had been application-level handled by the pgx connection.",
 				ConstLabels: prometheus.Labels{"db": dbName},
-				Buckets:     prometheus.DefBuckets,
+				Buckets:     buckets,
 			},
 			[]string{"method"},
 		),
@@ -128,7 +131,7 @@ func newPgxPoolCollector(db *pgxpool.Pool) *pgxPoolCollector {
 				Name:        "tx_executed_seconds",
 				Help:        "Histogram of transaction latency (seconds) of db that had been application-level handled by the pgx connection.",
 				ConstLabels: prometheus.Labels{"db": dbName},
-				Buckets:     prometheus.DefBuckets,
+				Buckets:     buckets,
 			},
 			nil,
 		),

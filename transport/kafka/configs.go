@@ -48,6 +48,8 @@ type ConsumerConfig struct {
 
 	BatchTimeout time.Duration `env:"KAFKA_BATCH_TIMEOUT" default:"1s"`
 
+	EnableMetrics bool `env:"KAFKA_ENABLE_METRICS" default:"true"`
+
 	FlushTime time.Duration
 }
 
@@ -67,6 +69,9 @@ type ProducerConfig struct {
 	ConnTimeout            time.Duration
 	RequiredAcks           kafka.RequiredAcks
 	Async                  bool
+	Completion             func(messages []kafka.Message, err error)
 	Compression            kafka.Compression
 	AllowAutoTopicCreation bool
+	AllowManualTopic       bool
+	EnableMetrics          bool
 }

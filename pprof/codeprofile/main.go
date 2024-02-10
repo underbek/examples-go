@@ -27,7 +27,7 @@ func foo() {
 	}
 }
 
-func profileHandler(w http.ResponseWriter, r *http.Request) {
+func profileHandler(w http.ResponseWriter, _ *http.Request) {
 	// создаём файл журнала профилирования cpu
 	fcpu, err := os.Create(`pprof/codeprofile/cpu.profile`)
 	if err != nil {

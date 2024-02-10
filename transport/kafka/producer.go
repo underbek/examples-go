@@ -6,11 +6,10 @@ import (
 	"net"
 
 	"github.com/segmentio/kafka-go"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
-
 	"github.com/underbek/examples-go/logger"
 	"github.com/underbek/examples-go/tracing"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type Producer interface {
@@ -19,34 +18,15 @@ type Producer interface {
 }
 
 type producer struct {
-	logger *logger.Logger
-	writer *kafka.Writer
+	logger  *logger.Logger
+	writer  *kafka.Writer
+	metrics producerMetrics
 }
 
 func NewProducer(logger *logger.Logger, cfg ProducerConfig) (Producer, error) {
-	conn, err := (&kafka.Dialer{
-		ClientID:  cfg.AppName,
-		Timeout:   cfg.ConnTimeout,
-		DualStack: true,
-	}).DialLeader(
-		context.Background(),
-		"tcp",
-		cfg.Brokers[0],
-		cfg.Topic,
-		0,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	if err = conn.Close(); err != nil {
-		return nil, err
-	}
-
 	writer := &kafka.Writer{
 		Addr:                   kafka.TCP(cfg.Brokers...),
-		Topic:                  cfg.Topic,
-		Balancer:               &kafka.RoundRobin{},
+		Balancer:               &kafka.CRC32Balancer{},
 		MaxAttempts:            cfg.MaxAttempts,
 		WriteBackoffMin:        cfg.WriteBackoffMin,
 		WriteBackoffMax:        cfg.WriteBackoffMax,
@@ -57,6 +37,7 @@ func NewProducer(logger *logger.Logger, cfg ProducerConfig) (Producer, error) {
 		WriteTimeout:           cfg.WriteTimeout,
 		RequiredAcks:           cfg.RequiredAcks,
 		Async:                  cfg.Async,
+		Completion:             cfg.Completion,
 		Compression:            cfg.Compression,
 		AllowAutoTopicCreation: cfg.AllowAutoTopicCreation,
 		Transport: &kafka.Transport{
@@ -67,9 +48,44 @@ func NewProducer(logger *logger.Logger, cfg ProducerConfig) (Producer, error) {
 		},
 	}
 
+	dialer := &kafka.Dialer{
+		ClientID:  cfg.AppName,
+		Timeout:   cfg.ConnTimeout,
+		DualStack: true,
+	}
+
+	var conn *kafka.Conn
+	var err error
+
+	if cfg.AllowManualTopic {
+		conn, err = dialer.DialContext(
+			context.Background(),
+			"tcp",
+			cfg.Brokers[0],
+		)
+	} else {
+		writer.Topic = cfg.Topic
+		conn, err = dialer.DialLeader(
+			context.Background(),
+			"tcp",
+			cfg.Brokers[0],
+			cfg.Topic,
+			0,
+		)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	if err = conn.Close(); err != nil {
+		return nil, err
+	}
+
 	return &producer{
-		logger: logger,
-		writer: writer,
+		logger:  logger,
+		writer:  writer,
+		metrics: newProducerMetrics(cfg),
 	}, nil
 }
 
@@ -82,7 +98,7 @@ func (p *producer) Publish(ctx context.Context, msg kafka.Message) error {
 		trace.WithAttributes(attribute.String("topic", msg.Topic)))
 	defer span.End()
 
-	h := injectKafkaHeaders(ctx)
+	h := injectKafkaHeaders(ctx, p.logger)
 	msg.Headers = append(h, msg.Headers...)
 
 	err := p.writer.WriteMessages(ctx, msg)
@@ -95,8 +111,12 @@ func (p *producer) Publish(ctx context.Context, msg kafka.Message) error {
 			WithError(err).
 			Error("publish message to kafka failed")
 
+		p.metrics.incError(msg)
+
 		return fmt.Errorf("publish message: %w", err)
 	}
+
+	p.metrics.incMessage(msg)
 
 	p.logger.WithCtx(ctx).
 		With("topic", msg.Topic).

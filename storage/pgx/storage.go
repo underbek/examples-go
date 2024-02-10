@@ -2,6 +2,8 @@ package pgx
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -20,12 +22,9 @@ type Transaction interface {
 	ExtContext
 }
 
-type Config struct {
-	DSN string `env:"POSTGRES_DSN" valid:"required"`
-}
-
 type Storage interface {
 	Close()
+	Ping(ctx context.Context) error
 	Begin(ctx context.Context, opts *pgx.TxOptions) (Transaction, error)
 	ExtContext
 }
@@ -36,8 +35,15 @@ type storage struct {
 	*pgxpool.Pool
 }
 
-func New(ctx context.Context, dataSource string, opts ...Option) (Storage, error) {
-	db, err := pgxpool.New(ctx, dataSource)
+func New(ctx context.Context, cfg Config, opts ...Option) (Storage, error) {
+	poolConfig, err := pgxpool.ParseConfig(cfg.DSN)
+	if err != nil {
+		return nil, err
+	}
+
+	poolConfig.ConnConfig.RuntimeParams["statement_timeout"] = fmt.Sprintf("%d", cfg.Timeout/time.Millisecond)
+
+	db, err := pgxpool.NewWithConfig(ctx, poolConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +61,7 @@ func New(ctx context.Context, dataSource string, opts ...Option) (Storage, error
 
 func (s *storage) Begin(ctx context.Context, opts *pgx.TxOptions) (Transaction, error) {
 	txOpts := pgx.TxOptions{
-		IsoLevel: pgx.Serializable,
+		IsoLevel: pgx.ReadCommitted,
 	}
 
 	if opts != nil {
@@ -68,4 +74,8 @@ func (s *storage) Begin(ctx context.Context, opts *pgx.TxOptions) (Transaction, 
 	}
 
 	return tx, nil
+}
+
+func (s *storage) Ping(ctx context.Context) error {
+	return s.Pool.Ping(ctx)
 }

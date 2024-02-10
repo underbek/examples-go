@@ -33,6 +33,7 @@ const (
 	updateMethod    = "UPDATE"
 	deleteMethod    = "DELETE"
 	undefinedMethod = "UNDEFINED"
+	pingMethod      = "PING"
 )
 
 func WithMetrics() Option {
@@ -65,7 +66,7 @@ func parseErrorCode(err error) string {
 	return undefinedErrorCode
 }
 
-func parseSQLMethod(sql string) string {
+func parseSqlMethod(sql string) string {
 	sql = strings.TrimSpace(sql)
 
 	sl := strings.Split(sql, " ")
@@ -82,13 +83,15 @@ func parseSQLMethod(sql string) string {
 		return updateMethod
 	case deleteMethod:
 		return deleteMethod
+	case pingMethod:
+		return pingMethod
 	}
 
 	return undefinedMethod
 }
 
 func collectMetrics(c *pgxPoolCollector, start time.Time, sql string, err error) {
-	method := parseSQLMethod(sql)
+	method := parseSqlMethod(sql)
 
 	c.queryExecutedHistogram.WithLabelValues(method).Observe(time.Since(start).Seconds())
 	c.queryExecutedCounter.WithLabelValues(method, parseErrorCode(err)).Inc()
@@ -124,6 +127,16 @@ func (c *DBCollector) QueryRow(ctx context.Context, sql string, args ...interfac
 func (c *DBCollector) Close() {
 	prometheus.Unregister(c.collector)
 	c.conn.Close()
+}
+
+func (c *DBCollector) Ping(ctx context.Context) error {
+	start := time.Now()
+
+	err := c.conn.Ping(ctx)
+
+	collectMetrics(c.collector, start, "PING", err)
+
+	return err
 }
 
 // Begin returned transaction wrapper

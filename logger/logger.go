@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"errors"
 	"os"
 
 	"go.uber.org/zap"
@@ -62,6 +63,13 @@ func (l *Logger) Fatal(msg string) {
 	l.internal.Fatal(msg, l.fields...)
 }
 
+func (l *Logger) Fields(f []zap.Field) *Logger {
+	return &Logger{
+		internal: l.internal,
+		fields:   append(l.fields, f...),
+	}
+}
+
 func (l *Logger) With(key string, value any) *Logger {
 	return &Logger{
 		internal: l.internal,
@@ -70,10 +78,37 @@ func (l *Logger) With(key string, value any) *Logger {
 }
 
 func (l *Logger) WithError(err error) *Logger {
+	for k, v := range parseErrorData(err) {
+		l.fields = append(l.fields, zap.Any(k, v))
+	}
+
 	return &Logger{
 		internal: l.internal,
 		fields:   append(l.fields, zap.Error(err)),
 	}
+}
+
+func parseErrorData(err error) map[string]any {
+	var data map[string]any
+
+	for {
+		if err == nil {
+			break
+		}
+
+		u, ok := err.(interface {
+			ErrorData() map[string]any
+		})
+		if !ok {
+			err = errors.Unwrap(err)
+			continue
+		}
+
+		data = u.ErrorData()
+		break
+	}
+
+	return data
 }
 
 func newZapLogger(debug bool) (*zap.Logger, error) {

@@ -6,8 +6,7 @@ import (
 	"time"
 
 	"github.com/docker/go-connections/nat"
-	_ "github.com/jackc/pgx/v4/stdlib"
-	_ "github.com/lib/pq"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 )
@@ -22,12 +21,14 @@ type (
 	PostgresContainerOption func(c *PostgresContainerConfig)
 
 	PostgresContainerConfig struct {
-		ImageTag   string
-		User       string
-		Password   string
-		MappedPort string
-		Database   string
-		Host       string
+		ImageTag     string
+		User         string
+		Password     string
+		MappedPort   string
+		Database     string
+		Host         string
+		EnvPortKey   string
+		StartTimeout time.Duration
 	}
 )
 
@@ -48,8 +49,16 @@ func WithPostgresDatabaseName(dbName string) PostgresContainerOption {
 	}
 }
 
+func WithPostgresStartTimeout(timeout time.Duration) PostgresContainerOption {
+	return func(c *PostgresContainerConfig) {
+		c.StartTimeout = timeout
+	}
+}
+
 // NewPostgresContainer creates and starts a Postgres container.
 func NewPostgresContainer(ctx context.Context, opts ...PostgresContainerOption) (*PostgresContainer, error) {
+	registryCred()
+
 	const (
 		psqlImage = "postgres"
 		psqlPort  = "5432"
@@ -57,16 +66,21 @@ func NewPostgresContainer(ctx context.Context, opts ...PostgresContainerOption) 
 
 	// Define container ENVs
 	config := PostgresContainerConfig{
-		ImageTag: "11.5",
-		User:     "user",
-		Password: "password",
-		Database: "db_test",
+		ImageTag:   "14.7",
+		User:       "user",
+		Password:   "password",
+		Database:   "db_test",
+		EnvPortKey: "TEST_POSTGRES_PORT",
 	}
 	for _, opt := range opts {
 		opt(&config)
 	}
 
-	containerPort := psqlPort + "/tcp"
+	if config.StartTimeout == 0 {
+		config.StartTimeout = time.Minute
+	}
+
+	containerPort := fmt.Sprintf("%s/tcp", psqlPort)
 
 	// Build testcontainer request
 	req := testcontainers.GenericContainerRequest{
@@ -77,15 +91,15 @@ func NewPostgresContainer(ctx context.Context, opts ...PostgresContainerOption) 
 				"POSTGRES_DB":       config.Database,
 			},
 			ExposedPorts: []string{
-				containerPort,
-				//"5432:5432", // for local development, do not remove it
+				setContainerPortByEnv(containerPort, config.EnvPortKey),
 			},
 			Image: fmt.Sprintf("%s:%s", psqlImage, config.ImageTag),
-			WaitingFor: wait.ForExec([]string{"psql", "-d", config.Database, "-U", config.User, "-c", "SELECT 1;"}).
-				WithPollInterval(time.Millisecond * 100).
-				WithExitCodeMatcher(func(exitCode int) bool {
-					return exitCode == 0
-				}),
+			WaitingFor: wait.ForAll(
+				wait.ForLog(".*PostgreSQL init process complete; ready for start up.*").AsRegexp(),
+				wait.ForSQL(nat.Port(containerPort), "pgx", func(host string, port nat.Port) string {
+					return fmt.Sprintf("postgresql://%v:%v@%s:%v/%v", config.User, config.Password, host, port.Port(), config.Database)
+				}).WithStartupTimeout(config.StartTimeout),
+			),
 		},
 		Started: true,
 	}

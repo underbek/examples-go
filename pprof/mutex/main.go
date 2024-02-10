@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/pprof"
-	_ "net/http/pprof" // подключаем пакет pprof
 	"runtime"
 	"sync"
 	"time"

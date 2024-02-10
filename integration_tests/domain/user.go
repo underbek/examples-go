@@ -7,7 +7,7 @@ import (
 )
 
 type User struct {
-	Id        int             `json:"id" db:"id"`
+	ID        int             `json:"id" db:"id"`
 	Name      string          `json:"name" db:"name"`
 	Balance   decimal.Decimal `json:"balance" db:"balance"`
 	CratedAt  time.Time       `json:"-" db:"created_at"`

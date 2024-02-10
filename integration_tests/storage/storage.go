@@ -14,9 +14,9 @@ type storage struct {
 }
 
 var (
-	AlreadyExistsErr       = errors.New("already exists")
-	NotFoundErr            = errors.New("not found")
-	IncorrectQueryResponse = errors.New("incorrect query response")
+	ErrAlreadyExists          = errors.New("already exists")
+	ErrNotFound               = errors.New("not found")
+	ErrIncorrectQueryResponse = errors.New("incorrect query response")
 )
 
 func New(dsn string) (*storage, error) {
@@ -42,7 +42,7 @@ func (s *storage) CreatUser(ctx context.Context, user domain.User) (domain.User,
 	defer res.Close()
 
 	if !res.Next() {
-		return domain.User{}, IncorrectQueryResponse
+		return domain.User{}, ErrIncorrectQueryResponse
 	}
 	var resUser domain.User
 	if err := res.StructScan(&resUser); err != nil {
@@ -63,6 +63,6 @@ func (s *storage) GetUser(ctx context.Context, id int) (domain.User, error) {
 	return user, nil
 }
 
-func (s *storage) UpdateUser(ctx context.Context, user domain.User) (domain.User, error) {
+func (s *storage) UpdateUser(_ context.Context, _ domain.User) (domain.User, error) {
 	return domain.User{}, nil
 }

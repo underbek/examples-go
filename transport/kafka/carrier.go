@@ -2,8 +2,10 @@ package kafka
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/segmentio/kafka-go"
+	"github.com/underbek/examples-go/logger"
 	"go.opentelemetry.io/otel"
 )
 
@@ -34,8 +36,18 @@ func (k HeadersCarrier) Keys() []string {
 	return r
 }
 
-func injectKafkaHeaders(ctx context.Context) []kafka.Header {
+func injectKafkaHeaders(ctx context.Context, log *logger.Logger) []kafka.Header {
 	h := make(HeadersCarrier, 0)
 	otel.GetTextMapPropagator().Inject(ctx, &h)
+
+	if meta := logger.ParseCtxMeta(ctx); meta != nil {
+		data, err := json.Marshal(meta)
+		if err != nil {
+			log.WithCtx(ctx).WithError(err).Error("json.Marshal meta for kafka headers")
+		}
+
+		h.Set(logger.Meta, string(data))
+	}
+
 	return h
 }

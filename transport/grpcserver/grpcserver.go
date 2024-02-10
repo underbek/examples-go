@@ -3,23 +3,16 @@ package grpcserver
 import (
 	"context"
 	"fmt"
-	"net"
-
 	"github.com/underbek/examples-go/logger"
+	mw "github.com/underbek/examples-go/middlewares/grpc"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 	healthApi "google.golang.org/grpc/health/grpc_health_v1"
+	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/reflection"
-
-	mw "github.com/underbek/examples-go/middlewares/grpc"
+	"net"
 )
-
-type Config struct {
-	ShowHealthLogs  bool `env:"SHOW_HEALTH_LOGS" envDefault:"false"`
-	ShowPayloadLogs bool `env:"SHOW_PAYLOAD_LOGS" envDefault:"true"`
-	Port            int  `env:"GRPC_SERVER_PORT" envDefault:"8080"`
-}
 
 type GRPCServer struct {
 	logger     *logger.Logger
@@ -30,13 +23,16 @@ type GRPCServer struct {
 func New(logger *logger.Logger, cfgServer Config, checks ...checkHealthFunc) *GRPCServer {
 
 	gRPCServer := grpc.NewServer(
-		mw.UnaryInterceptors(logger, cfgServer.ShowHealthLogs, cfgServer.ShowPayloadLogs),
+		mw.UnaryInterceptors(logger, cfgServer.ShowHealthLogs, cfgServer.ShowPayloadLogs, cfgServer.Timeout),
+		grpc.KeepaliveParams(keepalive.ServerParameters{
+			MaxConnectionAge: cfgServer.KeepAlive,
+		}),
 	)
 
 	reflection.Register(gRPCServer)
 
 	baseHealthServer := health.NewServer()
-	healthServer := newHealthServer(baseHealthServer, checks...)
+	healthServer := newHealthserver(baseHealthServer, checks...)
 	healthApi.RegisterHealthServer(gRPCServer, healthServer)
 
 	return &GRPCServer{

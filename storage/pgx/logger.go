@@ -2,11 +2,11 @@ package pgx
 
 import (
 	"context"
+	"errors"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
-
 	"github.com/underbek/examples-go/logger"
 )
 
@@ -53,6 +53,10 @@ func (l *DBLogger) QueryRow(ctx context.Context, sql string, args ...interface{}
 func (l *DBLogger) Close() {
 	l.conn.Close()
 	l.logger.Debug("Close")
+}
+
+func (l *DBLogger) Ping(ctx context.Context) error {
+	return l.conn.Ping(ctx)
 }
 
 // Begin returned transaction wrapper
@@ -103,6 +107,12 @@ func (l *TxLogger) Commit(ctx context.Context) error {
 
 func (l *TxLogger) Rollback(ctx context.Context) error {
 	err := l.tx.Rollback(ctx)
+
+	//to remove "tx is closed from" logs
+	if errors.Is(err, pgx.ErrTxClosed) {
+		err = nil
+	}
+
 	l.logger.WithCtx(ctx).WithError(err).Debug("Rollback")
 
 	return err

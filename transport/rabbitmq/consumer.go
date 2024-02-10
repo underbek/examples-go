@@ -4,77 +4,40 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"runtime/debug"
 
 	amqp "github.com/rabbitmq/amqp091-go"
-	"go.opentelemetry.io/otel"
+	"github.com/underbek/examples-go/logger"
+	"github.com/underbek/examples-go/tracing"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
-
-	"github.com/underbek/examples-go/logger"
-	"github.com/underbek/examples-go/tracing"
 )
 
-type HandleFunc = func(ctx context.Context, msg amqp.Delivery)
+type HandleFunc = func(context.Context, amqp.Delivery)
 
-type Consumer interface {
-	Consume(ctx context.Context, cfg Consume, handler HandleFunc) error
-	Close() error
-}
-
-type consumer struct {
+type Consumer struct {
 	logger    *logger.Logger
-	channel   *amqp.Channel
+	channel   Channel
 	queueName string
+	metrics   metrics
 }
 
-func NewConsumer(logger *logger.Logger, conn Connection, qd QueueDeclare, qb QueueBind, ed ExchangeDeclare) (Consumer, error) {
-	ch, err := conn.Channel()
-	if err != nil {
-		return nil, err
-	}
-
-	if err = ch.ExchangeDeclare(
-		ed.Exchange,
-		string(ed.Type),
-		ed.Durable,
-		ed.AutoDelete,
-		ed.Internal,
-		ed.NoWait,
-		ed.Arguments,
-	); err != nil {
-		return nil, fmt.Errorf("exchange declare: %w", err)
-	}
-	logger.With("ExchangeDeclare", ed).Info("exchange declared")
-
-	_, err = ch.QueueDeclare(
-		qd.Queue,
-		qd.Durable,
-		qd.AutoDelete,
-		qd.Exclusive,
-		qd.NoWait,
-		qd.Arguments,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("decalre queue: %w", err)
-	}
-
-	logger.With("QueueDeclare", qd).Info("queue declared")
-
-	err = ch.QueueBind(qb.Queue, qb.RoutingKey, qb.Exchange, qb.NoWait, qb.Arguments)
-	if err != nil {
-		return nil, fmt.Errorf("bind queue: %w", err)
-	}
-	logger.With("QueueBind", qb).Info("queue bound")
-
-	return &consumer{
-		logger:    logger,
+func NewConsumer(
+	l *logger.Logger,
+	ch Channel,
+	queue string,
+	enableMetrics bool,
+) *Consumer {
+	return &Consumer{
+		logger:    l,
 		channel:   ch,
-		queueName: qd.Queue,
-	}, nil
+		queueName: queue,
+		metrics:   newConsumerMetrics(queue, enableMetrics),
+	}
 }
 
-func (c *consumer) Consume(ctx context.Context, cfg Consume, handler HandleFunc) error {
+func (c *Consumer) Consume(ctx context.Context, cfg Consume, handler HandleFunc) error {
 	deliveryCh, err := c.channel.Consume(
 		c.queueName,
 		cfg.ConsumerTag,
@@ -102,16 +65,20 @@ func (c *consumer) Consume(ctx context.Context, cfg Consume, handler HandleFunc)
 					return errors.New("delivery channel was closed")
 				}
 
-				msgCtx := otel.GetTextMapPropagator().Extract(ctx, AmqpHeadersCarrier(msg.Headers))
-				msgCtx, span := tracing.StartCustomSpan(msgCtx, trace.SpanKindConsumer, "rabbitmq", "Read",
-					trace.WithAttributes(attribute.String("queue", c.queueName)))
+				c.metrics.observeLatency(msg)
+
+				msgCtx, span := tracing.StartCustomSpan(
+					parseAMQPHeaders(ctx, msg.Headers),
+					trace.SpanKindConsumer, "rabbitmq", "Read",
+					trace.WithAttributes(attribute.String("queue", c.queueName)),
+				)
 
 				c.logger.WithCtx(msgCtx).
-					With("message", msg).
+					With("rmq_consumed_message", msg).
 					With("queue", c.queueName).
 					Debug("message consumed from rabbitmq")
 
-				handler(msgCtx, msg)
+				c.recoverHandler(msgCtx, handler, msg)
 
 				span.End()
 			}
@@ -121,6 +88,16 @@ func (c *consumer) Consume(ctx context.Context, cfg Consume, handler HandleFunc)
 	return gr.Wait()
 }
 
-func (c *consumer) Close() error {
-	return c.channel.Close()
+func (c *Consumer) recoverHandler(ctx context.Context, handler HandleFunc, msg amqp.Delivery) {
+	defer func() {
+		if r := recover(); r != nil {
+			c.logger.WithCtx(ctx).
+				With("rabbitmq_message", msg).
+				With("panic", r).
+				With("trace", string(debug.Stack())).
+				Error(fmt.Sprintf("Recovered from rabbitmq panic: %v", r))
+		}
+	}()
+
+	handler(ctx, msg)
 }

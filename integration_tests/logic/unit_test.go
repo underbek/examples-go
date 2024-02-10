@@ -15,7 +15,7 @@ func TestCreatUser(t *testing.T) {
 	l := New(storageMock)
 
 	storageMock.On("GetUser", mock.Anything, 10).Return(domain.User{
-		Id:      10,
+		ID:      10,
 		Name:    "Tony Stark",
 		Balance: decimal.NewFromInt(1_000_000_000),
 	}, nil)
@@ -23,7 +23,7 @@ func TestCreatUser(t *testing.T) {
 	user, err := l.GetUser(context.Background(), 10)
 	assert.NoError(t, err)
 
-	assert.Equal(t, 10, user.Id)
+	assert.Equal(t, 10, user.ID)
 	assert.Equal(t, "Tony Stark", user.Name)
 	assert.Equal(t, "1000000000", user.Balance.String())
 }

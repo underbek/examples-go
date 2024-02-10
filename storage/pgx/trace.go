@@ -6,10 +6,9 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/underbek/examples-go/tracing"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
-
-	"github.com/underbek/examples-go/tracing"
 )
 
 type DBTracer struct {
@@ -54,6 +53,10 @@ func (t *DBTracer) QueryRow(ctx context.Context, sql string, args ...interface{}
 
 func (t *DBTracer) Close() {
 	t.conn.Close()
+}
+
+func (t *DBTracer) Ping(ctx context.Context) error {
+	return t.conn.Ping(ctx)
 }
 
 // Begin returned transaction wrapper

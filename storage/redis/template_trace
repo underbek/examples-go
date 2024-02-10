@@ -1,0 +1,56 @@
+import (
+	"time"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/redis/go-redis/v9"
+)
+
+{{range $method := .Interface.Methods}}
+    {{- $length := len $method.Params }} {{ if eq $length 0 }}
+       {{- continue}}
+    {{- end }}
+    {{- $firstParamType :=  (index $method.Params 0).Type }}
+    {{- if ne $firstParamType "context.Context"}}{{continue}}{{end}}
+  func (t *DBTracer) {{$method.Declaration}} {
+  	ctx, traceSpan := tracing.StartCustomSpan(ctx,
+  	    trace.SpanKindInternal,
+  	    "redis",
+  	    "{{$method.Name}}",
+  	    {{- range $param := $method.Params}}
+  	        {{- if  eq $param.Type "context.Context"}}
+  	            {{- continue}}
+            {{- end}}
+  	        {{- if  eq $param.Type "string"}}
+  	        trace.WithAttributes(attribute.String("{{$param.Name}}", {{$param.Name}})),
+  	        {{- end}}
+  	        {{- if  eq $param.Type "int"}}
+  	        trace.WithAttributes(attribute.Int("{{$param.Name}}", {{$param.Name}})),
+  	        {{- end}}
+  	        {{- if  eq $param.Type "int32"}}
+  	        trace.WithAttributes(attribute.Int64("{{$param.Name}}", int64({{$param.Name}}))),
+  	        {{- end}}
+  	        {{- if  eq $param.Type "int64"}}
+  	        trace.WithAttributes(attribute.Int64("{{$param.Name}}", {{$param.Name}})),
+  	        {{- end}}
+  	        {{- if  eq $param.Type "uint64"}}
+  	        trace.WithAttributes(attribute.Int64("{{$param.Name}}", int64({{$param.Name}}))),
+  	        {{- end}}
+  	        {{- if  eq $param.Type "uint32"}}
+  	        trace.WithAttributes(attribute.Int64("{{$param.Name}}", int64({{$param.Name}}))),
+  	        {{- end}}
+  	        {{- if  eq $param.Type "float64"}}
+  	        trace.WithAttributes(attribute.Float64("{{$param.Name}}", {{$param.Name}})),
+  	        {{- end}}
+  	        {{- if  eq $param.Type "float32"}}
+  	        trace.WithAttributes(attribute.Float64("{{$param.Name}}", float64({{$param.Name}}))),
+  	        {{- end}}
+  	        {{- if  eq $param.Type "float"}}
+  	        trace.WithAttributes(attribute.Float64("{{$param.Name}}", float64({{$param.Name}}))),
+  	        {{- end}}
+  	    {{- end}}
+  	    )
+  	defer traceSpan.End()
+
+    return t.Storage.{{$method.Call}}
+  }
+{{end}}

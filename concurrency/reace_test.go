@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestRace(t *testing.T) {
+func TestRace(_ *testing.T) {
 
 	results := make(map[string]int)
 

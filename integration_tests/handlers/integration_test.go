@@ -86,7 +86,7 @@ func (s *TestSuite) TestCreateUser() {
 	s.Require().NoError(err)
 
 	expected := s.fixtures.LoadTemplate("fixtures/api/create_user_response.json.temp", map[string]interface{}{
-		"id": userResponse.Id,
+		"id": userResponse.ID,
 	})
 
 	testutils.JSONEq(s.T(), expected, userResponse)

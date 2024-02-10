@@ -43,6 +43,8 @@ func WithRedisTag(tag string) RedisContainerOption {
 
 // NewRedisContainer creates and starts a Redis container.
 func NewRedisContainer(ctx context.Context, opts ...RedisContainerOption) (*RedisContainer, error) {
+	registryCred()
+
 	const (
 		redisImage = "redis"
 		redisPort  = "6379"
@@ -58,7 +60,7 @@ func NewRedisContainer(ctx context.Context, opts ...RedisContainerOption) (*Redi
 		opt(&config)
 	}
 
-	containerPort := redisPort + "/tcp"
+	containerPort := fmt.Sprintf("%s/tcp", redisPort)
 
 	// Build testcontainer request
 	req := testcontainers.GenericContainerRequest{
@@ -72,11 +74,14 @@ func NewRedisContainer(ctx context.Context, opts ...RedisContainerOption) (*Redi
 			},
 			Image: fmt.Sprintf("%s:%s", redisImage, config.ImageTag),
 			Cmd:   []string{"/bin/sh", "-c", "redis-server --requirepass $REDIS_PASSWORD"},
-			WaitingFor: wait.ForExec([]string{"redis-cli", "-a", config.Password, "PING"}).
-				WithPollInterval(time.Millisecond * 100).
-				WithExitCodeMatcher(func(exitCode int) bool {
-					return exitCode == 0
-				}),
+			WaitingFor: wait.ForAll(
+				wait.ForExec([]string{"redis-cli", "-a", config.Password, "PING"}).
+					WithPollInterval(time.Millisecond*100).
+					WithExitCodeMatcher(func(exitCode int) bool {
+						return exitCode == 0
+					}),
+				wait.ForLog(".*Ready to accept connections.*").AsRegexp(),
+			),
 		},
 		Started: true,
 	}

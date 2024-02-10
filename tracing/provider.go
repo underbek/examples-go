@@ -9,7 +9,7 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdkTrace "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -35,6 +35,7 @@ type Provider struct {
 func NewProvider(config Config) (*Provider, error) {
 	if !config.Enabled {
 		return &Provider{
+			// nolint:staticcheck
 			provider: trace.NewNoopTracerProvider(),
 		}, nil
 	}

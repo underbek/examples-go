@@ -3,9 +3,11 @@ package testcontainer
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/docker/go-connections/nat"
 	"github.com/phayes/freeport"
+	gokafka "github.com/segmentio/kafka-go"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 )
@@ -20,9 +22,11 @@ type (
 	KafkaContainerOption func(c *KafkaContainerConfig)
 
 	KafkaContainerConfig struct {
-		ImageTag   string
-		MappedPort string
-		Host       string
+		ImageTag     string
+		MappedPort   string
+		Host         string
+		StartTimeout time.Duration
+		PollInterval time.Duration
 	}
 )
 
@@ -36,8 +40,22 @@ func WithKafkaTag(tag string) KafkaContainerOption {
 	}
 }
 
+func WithKafkaStartTimeout(timeout time.Duration) KafkaContainerOption {
+	return func(c *KafkaContainerConfig) {
+		c.StartTimeout = timeout
+	}
+}
+
+func WithKafkaPollInterval(interval time.Duration) KafkaContainerOption {
+	return func(c *KafkaContainerConfig) {
+		c.PollInterval = interval
+	}
+}
+
 // NewKafkaContainer creates and starts a Kafka container.
 func NewKafkaContainer(ctx context.Context, opts ...KafkaContainerOption) (*KafkaContainer, error) {
+	registryCred()
+
 	const (
 		image = "krisgeus/docker-kafka"
 	)
@@ -48,6 +66,14 @@ func NewKafkaContainer(ctx context.Context, opts ...KafkaContainerOption) (*Kafk
 	}
 	for _, opt := range opts {
 		opt(&config)
+	}
+
+	if config.StartTimeout == 0 {
+		config.StartTimeout = time.Minute
+	}
+
+	if config.PollInterval == 0 {
+		config.PollInterval = time.Millisecond * 500
 	}
 
 	port, err := freeport.GetFreePort()
@@ -71,8 +97,46 @@ func NewKafkaContainer(ctx context.Context, opts ...KafkaContainerOption) (*Kafk
 				containerPort,
 				fmt.Sprintf("%d:%d", port, port),
 			},
-			Image:      fmt.Sprintf("%s:%s", image, config.ImageTag),
-			WaitingFor: wait.ForListeningPort(nat.Port(containerPort)),
+			Image: fmt.Sprintf("%s:%s", image, config.ImageTag),
+			WaitingFor: wait.ForAll(
+				wait.ForLog(".*kafka entered RUNNING state.*").AsRegexp(),
+				wait.ForListeningPort(nat.Port(containerPort)),
+				wait.ForNop(func(ctx context.Context, target wait.StrategyTarget) error {
+					testcontainers.Logger.Printf("⏰ Start internal kafka check")
+
+					host, errN := target.Host(ctx)
+					if errN != nil {
+						return errN
+					}
+
+					port, errN := target.MappedPort(ctx, nat.Port(containerPort))
+					if errN != nil {
+						return errN
+					}
+
+					testcontainers.Logger.Printf("⚠ Kafka port: %v", port.Port())
+
+					address := fmt.Sprintf("%s:%s", host, port.Port())
+
+					ticker := time.NewTicker(config.PollInterval)
+					defer ticker.Stop()
+
+					for {
+						select {
+						case <-ctx.Done():
+							return ctx.Err()
+						case <-ticker.C:
+							_, errN = gokafka.DialLeader(ctx, "tcp", address, "startup-tmp-topic", 0)
+							if errN != nil {
+								continue
+							}
+
+							return nil
+						}
+					}
+
+				}).WithStartupTimeout(config.StartTimeout),
+			),
 		},
 		Started: true,
 	}

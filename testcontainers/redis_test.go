@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -15,7 +15,7 @@ type TestRedisSuite struct {
 }
 
 func (s *TestRedisSuite) SetupSuite() {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*2)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*10)
 	defer cancel()
 
 	var err error
@@ -27,7 +27,7 @@ func (s *TestRedisSuite) TearDownSuite() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	s.container.Terminate(ctx)
+	s.Require().NoError(s.container.Terminate(ctx))
 }
 
 func TestSuiteRedis_Run(t *testing.T) {

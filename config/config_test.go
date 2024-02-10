@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/underbek/examples-go/transport/grpcclient"
 )
 
 func Test_ParseConfig(t *testing.T) {
@@ -54,9 +55,12 @@ func Test_PrivateValueInConfig(t *testing.T) {
 		appConfig App
 	}
 
+	err := os.Setenv("APP_NAME", "TEST-APP")
+	require.NoError(t, err)
+	defer os.Clearenv()
+
 	cfg, err := New[Config]()
-	require.Error(t, err)
-	assert.ErrorContains(t, err, "config is not provide unexported fields")
+	require.NoError(t, err)
 	assert.Empty(t, cfg.appConfig.Name)
 }
 
@@ -73,6 +77,7 @@ func Test_ParseByFile(t *testing.T) {
 
 	err = os.Setenv("ENV_FILE_PATH", envFilePath)
 	require.NoError(t, err)
+	defer os.Clearenv()
 
 	type Config struct {
 		App
@@ -82,4 +87,28 @@ func Test_ParseByFile(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "test", cfg.Name)
 	assert.True(t, cfg.Debug)
+}
+
+func Test_GRPCClients(t *testing.T) {
+	type Config struct {
+		ClientA grpcclient.Config `envPrefix:"SERVICE_A"`
+		ClientB grpcclient.Config `envPrefix:"SERVICE_B"`
+	}
+
+	err := os.Setenv("SERVICE_A_DSN", "core.dsn")
+	require.NoError(t, err)
+	err = os.Setenv("SERVICE_A_WITH_TLS", "true")
+	require.NoError(t, err)
+	err = os.Setenv("SERVICE_B_DSN", "cs.dsn")
+	require.NoError(t, err)
+
+	defer os.Clearenv()
+
+	cfg, err := New[Config]()
+	require.NoError(t, err)
+
+	assert.Equal(t, "core.dsn", cfg.ClientA.DSN)
+	assert.True(t, cfg.ClientA.WithTls)
+	assert.Equal(t, "cs.dsn", cfg.ClientB.DSN)
+	assert.False(t, cfg.ClientB.WithTls)
 }

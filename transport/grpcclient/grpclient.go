@@ -4,9 +4,15 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"time"
 
 	grpcZap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
+	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"
 	grpcPrometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
+	loggerPkg "github.com/underbek/examples-go/logger"
+	mw "github.com/underbek/examples-go/middlewares/grpc"
+	"github.com/underbek/examples-go/middlewares/grpc/grpccache"
+	redisPkg "github.com/underbek/examples-go/storage/redis"
 	trace "go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -14,19 +20,13 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
-
-	"github.com/underbek/examples-go/logger"
 )
 
-type Config struct {
-	ShowPayloadLogs bool   `env:"SHOW_PAYLOAD_LOGS" envDefault:"true"`
-	DSN             string `env:"_DSN" valid:"required"`
-	WithTLS         bool   `env:"_WITH_TLS" envDefault:"false"`
-}
+type Option = func([]grpc.UnaryClientInterceptor) []grpc.UnaryClientInterceptor
 
-func NewConnection(logger *logger.Logger, cfg Config) (*grpc.ClientConn, error) {
+func NewConnection(logger *loggerPkg.Logger, cfg Config, options ...Option) (*grpc.ClientConn, error) {
 	var transportCredentials credentials.TransportCredentials
-	if cfg.WithTLS {
+	if cfg.WithTls {
 		transportCredentials = credentials.NewTLS(&tls.Config{
 			MinVersion:         tls.VersionTLS12,
 			InsecureSkipVerify: false,
@@ -36,26 +36,42 @@ func NewConnection(logger *logger.Logger, cfg Config) (*grpc.ClientConn, error) 
 	}
 
 	opts := []grpc.DialOption{
+		// nolint:staticcheck
 		grpc.WithStreamInterceptor(trace.StreamClientInterceptor()),
+		// nolint:staticcheck
 		grpc.WithUnaryInterceptor(trace.UnaryClientInterceptor()),
 		grpc.WithTransportCredentials(transportCredentials),
-		grpc.WithChainUnaryInterceptor(
-			grpcPrometheus.UnaryClientInterceptor,
-			grpcZap.UnaryClientInterceptor(
-				logger.Named("grpc-client").Internal().(*zap.Logger),
-				grpcZap.WithLevels(func(code codes.Code) zapcore.Level {
-					return zapcore.DebugLevel
-				}),
-			),
-			CustomPayloadUnaryClientInterceptor(
-				logger.Named("grpc-client-payload").Internal().(*zap.Logger),
-				func(ctx context.Context, fullMethodName string) bool {
-					return cfg.ShowPayloadLogs &&
-						logger.Internal().(*zap.Logger).Core().Enabled(zapcore.DebugLevel)
-				},
-			),
+		grpc.WithDefaultServiceConfig(`{"loadBalancingConfig": [{"round_robin":{}}]}`),
+	}
+
+	unaries := []grpc.UnaryClientInterceptor{
+		mw.CustomPayloadUnaryClientInterceptor(
+			logger.Named("grpc-client-payload").Internal().(*zap.Logger),
+			func(ctx context.Context, fullMethodName string) bool {
+				return cfg.ShowPayloadLogs &&
+					logger.Internal().(*zap.Logger).Core().Enabled(zapcore.DebugLevel)
+			},
+		),
+		grpcZap.UnaryClientInterceptor(
+			logger.Named("grpc-client").Internal().(*zap.Logger),
+			grpcZap.WithLevels(func(code codes.Code) zapcore.Level {
+				return zapcore.DebugLevel
+			}),
+			grpcZap.WithMessageProducer(func(ctx context.Context, msg string, level zapcore.Level, code codes.Code, err error, duration zapcore.Field) {
+				ctxzap.Extract(ctx).With(loggerPkg.GetFieldsFromContext(ctx)...).Check(level, msg).Write(
+					zap.Error(err),
+					zap.String("grpc.code", code.String()),
+					duration,
+				)
+			}),
 		),
 	}
+
+	for _, fn := range options {
+		unaries = fn(unaries)
+	}
+
+	opts = append(opts, grpc.WithChainUnaryInterceptor(unaries...))
 
 	conn, err := grpc.Dial(
 		cfg.DSN,
@@ -67,4 +83,22 @@ func NewConnection(logger *logger.Logger, cfg Config) (*grpc.ClientConn, error) 
 	}
 
 	return conn, nil
+}
+
+func WithCacheOption(rCli redisPkg.Storage, enabled bool, ttl time.Duration, logger *loggerPkg.Logger) Option {
+	return func(interceptors []grpc.UnaryClientInterceptor) []grpc.UnaryClientInterceptor {
+		if enabled {
+			return append(interceptors, grpccache.NewCache(rCli, ttl, logger).UnaryClientInterceptor())
+		}
+
+		return interceptors
+	}
+}
+
+func WithMetricsOption() Option {
+	return func(interceptors []grpc.UnaryClientInterceptor) []grpc.UnaryClientInterceptor {
+		grpcPrometheus.EnableClientHandlingTimeHistogram()
+
+		return append(interceptors, grpcPrometheus.UnaryClientInterceptor)
+	}
 }

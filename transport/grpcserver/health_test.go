@@ -7,11 +7,10 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"github.com/underbek/examples-go/logger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	healthApi "google.golang.org/grpc/health/grpc_health_v1"
-
-	"github.com/underbek/examples-go/logger"
 )
 
 func TestHealths(t *testing.T) {

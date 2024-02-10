@@ -4,7 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 )
 
 type Config struct {
@@ -15,32 +15,36 @@ type Config struct {
 	InsecureSkipVerify bool   `env:"REDIS_INSECURE_SKIP_VERIFY" envDefault:"false"`
 }
 
-type storage struct {
-	*redis.Client
-}
+type Storage redis.UniversalClient
 
-func New(ctx context.Context, cfg Config) (redis.Cmdable, error) {
-	opts := &redis.Options{
+type Option = func(pool *redis.Client, st Storage) Storage
+
+func New(ctx context.Context, cfg Config, opts ...Option) (Storage, error) {
+	rOpts := &redis.Options{
 		Addr:     cfg.Addr,
 		Password: cfg.Password,
 		DB:       cfg.DB,
 	}
 
 	if cfg.TLSEnabled {
-		opts.TLSConfig = &tls.Config{
+		rOpts.TLSConfig = &tls.Config{
 			MinVersion:         tls.VersionTLS12,
 			InsecureSkipVerify: cfg.InsecureSkipVerify, // nolint: gosec
 		}
 	}
 
-	rCli := redis.NewClient(opts)
+	rCli := redis.NewClient(rOpts)
 
-	err := rCli.Ping(ctx).Err()
+	var st Storage = rCli
+
+	for _, opt := range opts {
+		st = opt(rCli, st)
+	}
+
+	err := st.Ping(ctx).Err()
 	if err != nil {
 		return nil, err
 	}
 
-	return &storage{
-		rCli,
-	}, nil
+	return st, nil
 }

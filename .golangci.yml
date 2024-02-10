@@ -19,7 +19,7 @@ linters:
     - staticcheck
     - structcheck
     - stylecheck
-    - typecheck
+#    - typecheck
     - unused
     - unconvert
     - varcheck

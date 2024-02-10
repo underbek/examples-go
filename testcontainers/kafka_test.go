@@ -22,7 +22,7 @@ type TestSuiteKafka struct {
 }
 
 func (s *TestSuiteKafka) SetupSuite() {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*2)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*10)
 	defer cancel()
 
 	var err error

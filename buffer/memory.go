@@ -6,27 +6,27 @@ import (
 	"github.com/pkg/errors"
 )
 
-type memory struct {
+type Memory struct {
 	data []byte
 	pos  int64
 }
 
-func NewMemoryBuffer() *memory {
-	return &memory{}
+func NewMemoryBuffer() *Memory {
+	return &Memory{}
 }
 
-func (m *memory) Len() int {
+func (m *Memory) Len() int {
 	if m.pos >= int64(len(m.data)) {
 		return 0
 	}
 	return int(int64(len(m.data)) - m.pos)
 }
 
-func (m *memory) Size() int64 {
+func (m *Memory) Size() int64 {
 	return int64(len(m.data))
 }
 
-func (m *memory) Read(b []byte) (n int, err error) {
+func (m *Memory) Read(b []byte) (n int, err error) {
 	if m.pos >= int64(len(m.data)) {
 		return 0, io.EOF
 	}
@@ -35,7 +35,7 @@ func (m *memory) Read(b []byte) (n int, err error) {
 	return n, err
 }
 
-func (m *memory) Seek(offset int64, whence int) (int64, error) {
+func (m *Memory) Seek(offset int64, whence int) (int64, error) {
 	var abs int64
 	switch whence {
 	case io.SeekStart:
@@ -55,22 +55,22 @@ func (m *memory) Seek(offset int64, whence int) (int64, error) {
 	return abs, nil
 }
 
-func (m *memory) Close() error {
+func (m *Memory) Close() error {
 	m.data = nil
 	m.pos = 0
 	return nil
 }
 
-func (m *memory) Pos() int64 {
+func (m *Memory) Pos() int64 {
 	return m.pos
 }
 
-func (m *memory) Write(p []byte) (n int, err error) {
+func (m *Memory) Write(p []byte) (n int, err error) {
 	m.data = append(m.data, p...)
 	m.pos += int64(len(m.data))
 	return len(p), nil
 }
 
-func (m *memory) Bytes() []byte {
+func (m *Memory) Bytes() []byte {
 	return m.data
 }

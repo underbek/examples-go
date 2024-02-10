@@ -1,0 +1,32 @@
+import (
+	"time"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/redis/go-redis/v9"
+)
+
+{{range $method := .Interface.Methods}}
+    {{- $length := len $method.Params }}
+    {{- if eq $length 0 }}
+       {{- continue}}
+    {{- end }}
+    {{- $firstParamType :=  (index $method.Params 0).Type }}
+    {{- if ne $firstParamType "context.Context"}}{{continue}}{{end}}
+    {{- $function := false}}
+    {{- range $type := $method.Params}}
+        {{- if eq $type.Name "fn"}}
+            {{- $function = true}}
+            {{- break}}
+        {{- end}}
+    {{- end}}
+    {{- if $function}}{{continue}}{{end}}
+  func (c *DBCollector) {{$method.Declaration}} {
+  	startTime := time.Now()
+
+    {{if $method.HasResults}}{{$method.ResultsNames}} = {{end}}c.Storage.{{$method.Call}}
+
+    collectMetrics(c.collector, startTime, "{{$method.Name}}", {{if $method.HasResults}}{{$method.ResultsNames}}{{end}}.Err())
+
+    return {{if $method.HasResults}}{{$method.ResultsNames}}{{end}}
+  }
+{{end}}

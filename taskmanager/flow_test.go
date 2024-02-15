@@ -60,3 +60,24 @@ func TestFlow_GetTasks(t *testing.T) {
 	metas = flow.GetTasks("2", FailCondition)
 	assert.EqualValues(t, metas, []TaskMeta{meta3})
 }
+
+func TestFlow_AllCondition(t *testing.T) {
+	flow := NewFlow("test")
+	task1 := TaskSetting{
+		TaskID:  "1",
+		RunType: SyncTask,
+	}
+	meta1 := TaskMeta{
+		FlowID:  "test",
+		TaskID:  "1",
+		RunType: SyncTask,
+	}
+	flow.AddCondition("test", AllCondition, task1)
+
+	metas := flow.GetTasks("test", SuccessCondition)
+	metas = flow.GetTasks("test", FailCondition)
+	assert.EqualValues(t, metas, []TaskMeta{meta1})
+
+	metas = flow.GetTasks("test", SuccessCondition)
+	assert.EqualValues(t, metas, []TaskMeta{meta1})
+}

@@ -5,6 +5,7 @@ type ConditionType string
 const (
 	SuccessCondition ConditionType = "success"
 	FailCondition    ConditionType = "failed"
+	AllCondition     ConditionType = "all"
 )
 
 type taskKey struct {
@@ -31,6 +32,22 @@ func NewFlow(flowID string) *Flow {
 }
 
 func (f *Flow) AddCondition(taskID string, conditionType ConditionType, settings ...TaskSetting) {
+
+	if conditionType == AllCondition {
+		key := taskKey{
+			taskID:        taskID,
+			conditionType: SuccessCondition,
+		}
+		f.tasks[key] = append(f.tasks[key], settings...)
+
+		key = taskKey{
+			taskID:        taskID,
+			conditionType: FailCondition,
+		}
+		f.tasks[key] = append(f.tasks[key], settings...)
+
+		return
+	}
 	key := taskKey{
 		taskID:        taskID,
 		conditionType: conditionType,

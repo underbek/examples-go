@@ -2,7 +2,6 @@ package taskmanager
 
 import (
 	"context"
-	"errors"
 )
 
 type TaskRunType string
@@ -12,9 +11,10 @@ const (
 	AsyncTask TaskRunType = "async"
 )
 
-var (
-	ErrNotImplemented = errors.New("task not implemented")
-)
+type TaskTrace struct {
+	TraceID [16]byte `json:"trace_id"`
+	SpanID  [8]byte  `json:"span_id"`
+}
 
 type TaskMeta struct {
 	TaskID     string      `json:"task_id"`
@@ -23,8 +23,10 @@ type TaskMeta struct {
 	RetryCount int         `json:"retry_count,omitempty"`
 
 	FailCount      int         `json:"fail_count,omitempty"`
-	Additional     interface{} `json:"additional,omitempty"`
 	PreviousResult interface{} `json:"previous_result,omitempty"`
+
+	Trace      *TaskTrace  `json:"trace,omitempty"`
+	Additional interface{} `json:"additional,omitempty"`
 	//TODO: trace info
 }
 

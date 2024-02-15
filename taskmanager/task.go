@@ -27,7 +27,6 @@ type TaskMeta struct {
 
 	Trace      *TaskTrace  `json:"trace,omitempty"`
 	Additional interface{} `json:"additional,omitempty"`
-	//TODO: trace info
 }
 
 type Task interface {

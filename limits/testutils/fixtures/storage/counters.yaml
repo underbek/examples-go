@@ -1,0 +1,127 @@
+- id: 1
+  hash: test_hash_1
+  limit_id: 4
+  value: "0"
+  start_time: "2023-05-05 11:52:47"
+  end_time: "2023-05-06 11:52:47"
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 2
+  hash: test_hash_2
+  limit_id: 7
+  value: "0"
+  start_time: "2023-05-05 11:52:47"
+  end_time: "2023-05-06 11:52:47"
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 3
+  hash: dG90YWxfY291bnQ6VVNEOmNhbGVuZGFyX2RheToyMDIzLTA1LTE2IDAwOjAwOjAwICswMDAwIFVUQzptaWQ6OQ==
+  limit_id: 13
+  value: "10"
+  start_time: "2023-05-05 00:00:00"
+  end_time: "2023-05-06 00:00:00"
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 4
+  hash: dG90YWxfYW1vdW50OlVTRDpjYWxlbmRhcl9tb250aDoyMDIzLTA0LTMwIDIzOjAwOjAwICswMDAwIFVUQzptZXJjaGFudF9pZDo3NzptaWQ6OTM6cGF5bWVudF9tZXRob2Q6Y2FyZA==
+  limit_id: 17
+  value: "200"
+  start_time: "2023-04-30 23:00:00"
+  end_time: "2023-05-31 23:00:00"
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 5
+  hash: dG90YWxfYW1vdW50OlVTRDpjYWxlbmRhcl9tb250aDoyMDIzLTA0LTMwIDIzOjAwOjAwICswMDAwIFVUQzptZXJjaGFudF9pZDo3NzptaWQ6OTM6cGF5bWVudF9tZXRob2Q6Y2FyZA==
+  limit_id: 17
+  value: "200"
+  start_time: "2023-04-30 23:00:00"
+  end_time: "2023-05-31 23:00:00"
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+  deleted_at: "2023-05-05 11:52:47"
+
+- id: 6
+  hash: dG90YWxfY291bnQ6VVNEOmNhbGVuZGFyX3dlZWs6MjAyMy0wNS0xNCAyMzowMDowMCArMDAwMCBVVEM6bWlkOjkzOnBheW1lbnRfbWV0aG9kOmNhcmQ=
+  limit_id: 18
+  value: "7"
+  start_time: "2023-05-14 23:00:00"
+  end_time: "2023-05-21 23:00:00"
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 7
+  hash: dG90YWxfY291bnQ6VVNEOmNhbGVuZGFyX3dlZWs6MjAyMy0wNS0xNCAyMzowMDowMCArMDAwMCBVVEM6cGF5bWVudF9tZXRob2Q6YXBt
+  limit_id: 19
+  value: "7"
+  start_time: "2023-05-14 23:00:00"
+  end_time: "2023-05-21 23:00:00"
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 8
+  hash: dG90YWxfYW1vdW50OlVTRDpjYWxlbmRhcl9kYXk6MjAyMy0wNS0xNiAwMDowMDowMCArMDAwMCBVVEM6bWVyY2hhbnRfaWQ6MQ==
+  limit_id: 20
+  value: "300"
+  start_time: "2023-05-16 00:00:00"
+  end_time: "2023-05-17 00:00:00"
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 9
+  hash: dG90YWxfYW1vdW50OlVTRDpjYWxlbmRhcl9kYXk6MjAyMy0wNS0xNiAwMDowMDowMCArMDAwMCBVVEM6bWVyY2hhbnRfaWQ6MTptaWQ6MTE6cGF5bWVudF9tZXRob2Q6YXBt
+  limit_id: 24
+  value: "300"
+  start_time: "2023-05-16 00:00:00"
+  end_time: "2023-05-17 00:00:00"
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 10
+  hash: dG90YWxfYW1vdW50OlVTRDpjYWxlbmRhcl9kYXk6MjAyMy0wNS0xNiAwMDowMDowMCArMDAwMCBVVEM6bWlkOjEyOm9wZXJhdGlvbl90eXBlOnBheW91dA==
+  limit_id: 26
+  value: "300"
+  start_time: "2023-05-16 00:00:00"
+  end_time: "2023-05-17 00:00:00"
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 11
+  hash: hash_11
+  limit_id: 27
+  value: "300"
+  start_time: "2023-05-16 00:00:00"
+  end_time: RAW=NOW() - INTERVAL '2 HOURS'
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 12
+  hash: hash_12
+  limit_id: 28
+  value: "1"
+  start_time: "2023-05-16 00:00:00"
+  end_time: RAW=NOW() - INTERVAL '23 HOURS'
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 13
+  hash: hash_13
+  limit_id: 28
+  value: "0"
+  start_time: "2023-05-16 00:00:00"
+  end_time: RAW=NOW() - INTERVAL '25 HOURS'
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 14
+  hash: hash_14
+  limit_id: 29
+  value: "10"
+  start_time: "2023-05-16 00:00:00"
+  end_time: "2023-05-17 00:00:00"
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+  deleted_at: "2023-05-05 11:52:47"

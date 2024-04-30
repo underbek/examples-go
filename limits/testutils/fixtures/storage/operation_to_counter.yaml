@@ -1,0 +1,59 @@
+- counter_id: 1
+  operation_id: 1
+  action_type: increase
+
+- counter_id: 7
+  operation_id: 4
+  action_type: increase
+
+- counter_id: 8
+  operation_id: 4
+  action_type: increase
+
+- counter_id: 11
+  operation_id: 7
+  action_type: increase
+
+- counter_id: 12
+  operation_id: 7
+  action_type: increase
+
+- counter_id: 11
+  operation_id: 8
+  action_type: increase
+
+- counter_id: 12
+  operation_id: 9
+  action_type: increase
+
+- counter_id: 13
+  operation_id: 10
+  action_type: increase
+
+- counter_id: 11
+  operation_id: 11
+  action_type: increase
+
+- counter_id: 12
+  operation_id: 11
+  action_type: increase
+
+- counter_id: 11
+  operation_id: 12
+  action_type: increase
+
+- counter_id: 12
+  operation_id: 13
+  action_type: increase
+
+- counter_id: 11
+  operation_id: 14
+  action_type: increase
+
+- counter_id: 12
+  operation_id: 14
+  action_type: increase
+
+- counter_id: 14
+  operation_id: 14
+  action_type: increase

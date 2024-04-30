@@ -1,0 +1,111 @@
+- id: 1
+  context_id: 1
+  value: "100"
+  currency: EUR
+  status: new
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 2
+  context_id: 2
+  value: "100"
+  currency: EUR
+  status: committed
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 3
+  context_id: 3
+  value: "100"
+  currency: EUR
+  status: new
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 4
+  context_id: 4
+  value: "300"
+  currency: USD
+  status: pending
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 5
+  context_id: 6
+  value: "300"
+  currency: USD
+  status: committed
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 6
+  context_id: 7
+  value: "300"
+  currency: USD
+  status: new
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 7
+  context_id: 8
+  value: "300"
+  currency: USD
+  status: pending
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 8
+  context_id: 9
+  value: "300"
+  currency: USD
+  status: pending
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 9
+  context_id: 9
+  value: "300"
+  currency: USD
+  status: pending
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 10
+  context_id: 10
+  value: "300"
+  currency: USD
+  status: pending
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 11
+  context_id: 11
+  value: "400"
+  currency: USD
+  status: pending
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 12
+  context_id: 12
+  value: "250"
+  currency: USD
+  status: pending
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 13
+  context_id: 12
+  value: "250"
+  currency: USD
+  status: pending
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 14
+  context_id: 13
+  value: "250"
+  currency: USD
+  status: pending
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"

@@ -1,0 +1,307 @@
+- id: 1
+  hash: dG90YWxfY291bnQ6RVVSOmNhbGVuZGFyX2RheTptZXJjaGFudF9pZDoxMjM6bWlkOjE3
+  currency: EUR
+  meta: {"mid": "17", "merchant_id": "123"}
+  limit_type: total_count
+  value: "100"
+  period: calendar_day
+  timezone: UTC
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 2
+  hash: dG90YWxfY291bnQ6RVVSOmNhbGVuZGFyX3dlZWs6bWVyY2hhbnRfaWQ6MTIzOm1pZDoxNw==
+  currency: EUR
+  meta: {"mid": "17", "merchant_id": "123"}
+  limit_type: total_count
+  value: "100"
+  period: calendar_week
+  timezone: UTC
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+  deleted_at: "2023-05-05 11:52:47"
+
+- id: 3
+  hash: bWF4X2Ftb3VudDpFVVI6bWVyY2hhbnRfaWQ6MTIzOm1pZDoxOQ==
+  currency: EUR
+  meta: {"mid": "19", "merchant_id": "123"}
+  limit_type: max_amount
+  value: "100"
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 4
+  hash: dG90YWxfY291bnQ6RVVSOmNhbGVuZGFyX2RheTptZXJjaGFudF9pZDoxMjM6bWlkOjE6
+  currency: EUR
+  meta: {"mid": "19", "merchant_id": "125"}
+  limit_type: total_amount
+  value: "100"
+  period: calendar_week
+  timezone: UTC
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 5
+  hash: test_hash_5
+  currency: EUR
+  meta: {"mid": "19", "merchant_id": "125"}
+  limit_type: total_amount
+  value: "100"
+  period: calendar_week
+  timezone: UTC
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+  deleted_at: "2023-05-05 11:52:47"
+
+- id: 6
+  hash: dG90YWxfYW1vdW50OkVVUjpjYWxlbmRhcl93ZWVrOm1lcmNoYW50X2lkOjEyOm1pZDoxNw==
+  currency: EUR
+  meta: {"mid": "17", "merchant_id": "12"}
+  limit_type: total_amount
+  value: "100"
+  period: calendar_week
+  timezone: UTC
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 7
+  hash: test_hash_7
+  currency: EUR
+  meta: {"mid": "17", "merchant_id": "14"}
+  limit_type: total_amount
+  value: "100"
+  period: calendar_week
+  timezone: UTC
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 8
+  hash: test_hash_8
+  currency: USD
+  meta: {"mid": "5"}
+  limit_type: max_amount
+  value: "100000"
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 9
+  hash: test_hash_9
+  currency: USD
+  meta: {"merchant_id": "6"}
+  limit_type: min_amount
+  value: "100"
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 10
+  hash: test_hash_10
+  currency: USD
+  meta: {"mid": "5", "merchant_id": "6"}
+  limit_type: min_amount
+  value: "150"
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 11
+  hash: test_hash_11
+  currency: USD
+  meta: {"mid": "7"}
+  limit_type: total_amount
+  value: "700"
+  period: calendar_week
+  timezone: UTC
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 12
+  hash: test_hash_12
+  currency: USD
+  meta: {"mid": "8"}
+  limit_type: total_count
+  value: "0"
+  period: calendar_day
+  timezone: UTC
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 13
+  hash: test_hash_13
+  currency: USD
+  meta: {"mid": "9"}
+  limit_type: total_count
+  value: "10"
+  period: calendar_day
+  timezone: UTC
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 14
+  hash: test_hash_14
+  currency: USD
+  meta: {"mid": "93"}
+  limit_type: max_amount
+  value: "550"
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 15
+  hash: test_hash_15
+  currency: USD
+  meta: {"merchant_id": "77", "payment_method": "card"}
+  limit_type: total_count
+  value: "10"
+  period: calendar_day
+  timezone: UTC
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 16
+  hash: test_hash_16
+  currency: USD
+  meta: {"merchant_id": "77", "payment_method": "apm"}
+  limit_type: total_count
+  value: "11"
+  period: calendar_day
+  timezone: UTC
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 17
+  hash: test_hash_17
+  currency: USD
+  meta: {"payment_method": "card", "merchant_id": "77", "mid": "93"}
+  limit_type: total_amount
+  value: "1000"
+  period: calendar_month
+  timezone: Europe/London
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 18
+  hash: test_hash_18
+  currency: USD
+  meta: {"payment_method": "card", "mid": "93"}
+  limit_type: total_count
+  value: "12"
+  period: calendar_week
+  timezone: Europe/London
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 19
+  hash: test_hash_19
+  currency: USD
+  meta: {"payment_method": "apm"}
+  limit_type: total_count
+  value: "10"
+  period: calendar_week
+  timezone: Europe/London
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 20
+  hash: test_hash_20
+  currency: USD
+  meta: {"merchant_id": "1"}
+  limit_type: total_amount
+  value: "500"
+  period: calendar_day
+  timezone: UTC
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 21
+  hash: test_hash_21
+  currency: USD
+  meta: {"payment_method": "apm", "mid": "7"}
+  limit_type: max_amount
+  value: "200"
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 22
+  hash: test_hash_22
+  currency: USD
+  meta: {"payment_method": "apm", "mid": "8"}
+  limit_type: min_amount
+  value: "500"
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 23
+  hash: test_hash_23
+  currency: USD
+  meta: {"payment_method": "apm", "mid": "10"}
+  limit_type: total_amount
+  value: "250"
+  period: calendar_month
+  timezone: Europe/London
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 24
+  hash: test_hash_24
+  currency: USD
+  meta: {"payment_method": "apm", "mid": "11", "merchant_id": "1"}
+  limit_type: total_amount
+  value: "500"
+  period: calendar_day
+  timezone: UTC
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 25
+  hash: test_hash_25
+  currency: USD
+  meta: {"payment_method": "apm", "mid": "12", "merchant_id": "1", "operation_type": "payout"}
+  limit_type: total_count
+  value: "10"
+  period: calendar_day
+  timezone: UTC
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 26
+  hash: test_hash_26
+  currency: USD
+  meta: {"mid": "12", "operation_type": "payout"}
+  limit_type: total_amount
+  value: "700"
+  period: calendar_day
+  timezone: UTC
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 27
+  hash: test_hash_27
+  currency: USD
+  meta: {"card_id": "1"}
+  limit_type: total_amount
+  value: "700"
+  period: calendar_day
+  timezone: UTC
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 28
+  hash: test_hash_28
+  currency: USD
+  meta: {"user_id": "1"}
+  limit_type: total_count
+  value: "10"
+  period: calendar_day
+  timezone: UTC
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 29
+  hash: test_hash_29
+  currency: USD
+  meta: {"user_id": "1"}
+  limit_type: total_amount
+  value: "10"
+  period: calendar_day
+  timezone: UTC
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+  deleted_at: "2023-05-05 11:52:47"

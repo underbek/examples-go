@@ -1,0 +1,97 @@
+- id: 1
+  hash: hash_1
+  currency: USD
+  meta: {"mid": "2", "merchant_id": "2"}
+  limit_type: total_count
+  value: "100"
+  period: calendar_day
+  timezone: UTC
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+  deleted_at: "2023-05-05 11:52:47"
+
+- id: 2
+  hash: hash_2
+  currency: EUR
+  meta: {"mid": "1", "merchant_id": "1"}
+  limit_type: total_count
+  value: "100"
+  period: calendar_day
+  timezone: UTC
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 3
+  hash: hash_3
+  currency: USD
+  meta: {"mid": "1", "merchant_id": "1"}
+  limit_type: total_count
+  value: "100"
+  period: calendar_day
+  timezone: UTC
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 4
+  hash: hash_4
+  currency: USD
+  meta: {"mid": "1", "merchant_id": "2"}
+  limit_type: total_count
+  value: "100"
+  period: calendar_day
+  timezone: UTC
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 5
+  hash: hash_5
+  currency: USD
+  meta: {"merchant_id": "1"}
+  limit_type: total_count
+  value: "100"
+  period: calendar_day
+  timezone: UTC
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 6
+  hash: hash_6
+  currency: USD
+  meta: {"mid": "2"}
+  limit_type: total_amount
+  value: "100"
+  period: calendar_day
+  timezone: UTC
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 7
+  hash: hash_7
+  currency: USD
+  meta: {"mid": "1", "merchant_id": "1"}
+  limit_type: total_amount
+  value: "100"
+  period: calendar_week
+  timezone: UTC
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 8
+  hash: hash_8
+  currency: USD
+  meta: {"mid": "2", "merchant_id": "1"}
+  limit_type: total_amount
+  value: "100"
+  period: calendar_day
+  timezone: Europe/London
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"
+
+- id: 9
+  hash: hash_9
+  currency: USD
+  meta: {"merchant_id": "1", "mid": "2"}
+  limit_type: max_amount
+  value: "200"
+  created_at: "2023-05-05 11:52:47"
+  updated_at: "2023-05-05 11:52:47"

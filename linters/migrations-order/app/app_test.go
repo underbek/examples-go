@@ -71,9 +71,14 @@ func TestRun(t *testing.T) {
 			wantErr:          "current order violates migrations history",
 		},
 		{
+			name:             "Slight time difference during the day",
+			args:             validArgs,
+			newMigrationName: time.Now().Add(time.Hour).Format(migrationTemplate),
+		},
+		{
 			name:             "Future migration version",
 			args:             validArgs,
-			newMigrationName: time.Now().Add(time.Minute).Format(migrationTemplate),
+			newMigrationName: time.Now().AddDate(0, 0, 1).Format(migrationTemplate),
 			wantErr:          "future migrations is not permitted",
 		},
 		{

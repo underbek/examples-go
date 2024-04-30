@@ -23,7 +23,11 @@ func Run(migPath, repoPath, repoMigPath, revision string) error {
 		return nil
 	}
 
-	if strings.Compare(cms[len(cms)-1], time.Now().Format(migrationTemplate)) == 1 {
+	//We add one day and cut off the hours in the current time so that the difference in time zones does not affect migrations
+	now := time.Now().UTC().AddDate(0, 0, 1)
+	currentDay := now.Truncate(24 * time.Hour)
+
+	if strings.Compare(cms[len(cms)-1], currentDay.Format(migrationTemplate)) == 1 {
 		return errors.New("future migrations is not permitted")
 	}
 

@@ -85,7 +85,7 @@ func NewProducer(logger *logger.Logger, cfg ProducerConfig) (Producer, error) {
 	return &producer{
 		logger:  logger,
 		writer:  writer,
-		metrics: newProducerMetrics(cfg),
+		metrics: newProducerMetrics(logger, cfg),
 	}, nil
 }
 

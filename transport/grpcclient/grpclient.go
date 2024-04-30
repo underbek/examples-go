@@ -10,6 +10,7 @@ import (
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"
 	grpcPrometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	loggerPkg "github.com/underbek/examples-go/logger"
+	"github.com/underbek/examples-go/metrics"
 	mw "github.com/underbek/examples-go/middlewares/grpc"
 	"github.com/underbek/examples-go/middlewares/grpc/grpccache"
 	redisPkg "github.com/underbek/examples-go/storage/redis"
@@ -97,7 +98,7 @@ func WithCacheOption(rCli redisPkg.Storage, enabled bool, ttl time.Duration, log
 
 func WithMetricsOption() Option {
 	return func(interceptors []grpc.UnaryClientInterceptor) []grpc.UnaryClientInterceptor {
-		grpcPrometheus.EnableClientHandlingTimeHistogram()
+		grpcPrometheus.EnableClientHandlingTimeHistogram(grpcPrometheus.WithHistogramBuckets(metrics.DefBuckets))
 
 		return append(interceptors, grpcPrometheus.UnaryClientInterceptor)
 	}

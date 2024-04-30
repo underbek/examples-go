@@ -7,6 +7,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/underbek/examples-go/metrics"
 )
 
 func MuxMetricsMiddleware() func(http.Handler) http.Handler {
@@ -52,7 +53,7 @@ func newMuxCollector() *httpMuxCollector {
 				Subsystem: "mux",
 				Name:      "request_duration_seconds",
 				Help:      "Histogram of request duration (seconds).",
-				Buckets:   prometheus.DefBuckets,
+				Buckets:   metrics.DefBuckets,
 			},
 			[]string{"path"},
 		),

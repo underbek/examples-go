@@ -2,6 +2,7 @@ package metrics
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -10,6 +11,8 @@ import (
 	"github.com/underbek/examples-go/logger"
 	"golang.org/x/sync/errgroup"
 )
+
+var DefBuckets = []float64{.005, .01, .025, .05, .1, .25, .5, 1, 2.5, 5, 10, 20, 40, 60, 80, 100, 120}
 
 type Server struct {
 	logger *logger.Logger
@@ -43,7 +46,7 @@ func (ms *Server) Run(ctx context.Context) error {
 
 	group, ctx := errgroup.WithContext(ctx)
 	group.Go(func() error {
-		if err := ms.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := ms.server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			ms.logger.WithError(err).Error("metric server")
 			return err
 		}

@@ -3,6 +3,7 @@ package redis
 import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/redis/go-redis/v9"
+	"github.com/underbek/examples-go/metrics"
 )
 
 // pgxPoolCollector is a Prometheus collector for pgx metrics.
@@ -19,9 +20,6 @@ type redisPoolCollector struct {
 
 func newRedisPoolCollector(cli *redis.Client) *redisPoolCollector {
 	dbName := cli.String()
-	buckets := make([]float64, 0)
-	buckets = append(buckets, prometheus.DefBuckets...)
-	buckets = append(buckets, 20, 40, 60, 80, 100, 120)
 
 	newGauge := func(name, help string) prometheus.Gauge {
 		return prometheus.NewGauge(
@@ -62,7 +60,7 @@ func newRedisPoolCollector(cli *redis.Client) *redisPoolCollector {
 				Name:        "call_executed_seconds",
 				Help:        "Histogram of transaction latency (seconds) of db that had been application-level handled by the redis connection.",
 				ConstLabels: prometheus.Labels{"db": dbName},
-				Buckets:     buckets,
+				Buckets:     metrics.DefBuckets,
 			},
 			[]string{"method"},
 		),

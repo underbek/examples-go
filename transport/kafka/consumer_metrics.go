@@ -6,6 +6,8 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/segmentio/kafka-go"
+	"github.com/underbek/examples-go/logger"
+	"github.com/underbek/examples-go/metrics"
 )
 
 const unknownLabelValue = "unknown"
@@ -16,7 +18,7 @@ type consumerMetrics struct {
 	errorsCount   *prometheus.CounterVec
 }
 
-func newConsumerMetrics(cfg ConsumerConfig) consumerMetrics {
+func newConsumerMetrics(logger *logger.Logger, cfg ConsumerConfig) consumerMetrics {
 	m := consumerMetrics{
 		latency: prometheus.NewHistogramVec(
 			prometheus.HistogramOpts{
@@ -54,9 +56,12 @@ func newConsumerMetrics(cfg ConsumerConfig) consumerMetrics {
 	}
 
 	if cfg.EnableMetrics {
-		prometheus.MustRegister(m.latency)
-		prometheus.MustRegister(m.messagesCount)
-		prometheus.MustRegister(m.errorsCount)
+		metrics.RegisterMetrics(
+			logger,
+			m.latency,
+			m.messagesCount,
+			m.errorsCount,
+		)
 	}
 
 	return m

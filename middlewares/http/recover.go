@@ -17,7 +17,7 @@ func MuxRecoveryMiddleware(h http.Handler, logger *logger.Logger) http.Handler {
 					With("url", r.URL.String()).
 					With("trace", string(debug.Stack())).
 					With("panic", err).
-					Error(fmt.Sprintf("Recovered from worker panic: %v", err))
+					Error(fmt.Sprintf("Recovered from pgtaskpool panic: %v", err))
 			}
 		}()
 

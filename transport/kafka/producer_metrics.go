@@ -3,6 +3,8 @@ package kafka
 import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/segmentio/kafka-go"
+	"github.com/underbek/examples-go/logger"
+	"github.com/underbek/examples-go/metrics"
 )
 
 type producerMetrics struct {
@@ -11,7 +13,7 @@ type producerMetrics struct {
 	errorsCount   *prometheus.CounterVec
 }
 
-func newProducerMetrics(cfg ProducerConfig) producerMetrics {
+func newProducerMetrics(logger *logger.Logger, cfg ProducerConfig) producerMetrics {
 	m := producerMetrics{
 		topic: cfg.Topic,
 		messagesCount: prometheus.NewCounterVec(
@@ -33,8 +35,7 @@ func newProducerMetrics(cfg ProducerConfig) producerMetrics {
 	}
 
 	if cfg.EnableMetrics {
-		prometheus.MustRegister(m.messagesCount)
-		prometheus.MustRegister(m.errorsCount)
+		metrics.RegisterMetrics(logger, m.messagesCount, m.errorsCount)
 	}
 
 	return m

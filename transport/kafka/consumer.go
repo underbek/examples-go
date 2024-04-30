@@ -65,7 +65,7 @@ func NewConsumer(logger *logger.Logger, cfg ConsumerConfig) (Consumer, error) {
 		manualReties:        cfg.ManualRetries,
 		manualRetryDuration: cfg.ManualRetryDuration,
 		logger:              logger,
-		metrics:             newConsumerMetrics(cfg),
+		metrics:             newConsumerMetrics(logger, cfg),
 	}, nil
 }
 

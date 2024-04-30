@@ -12,6 +12,7 @@ import (
 	grpcRecovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	grpcPrometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	exLogger "github.com/underbek/examples-go/logger"
+	"github.com/underbek/examples-go/metrics"
 	trace "go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.opentelemetry.io/otel/propagation"
 	"go.uber.org/zap"
@@ -38,15 +39,9 @@ func recoveryHandler(logger *exLogger.Logger) grpcRecovery.RecoveryHandlerFuncCo
 }
 
 func UnaryInterceptors(logger *exLogger.Logger, showHealthCheck, showPayloadLogs bool, timeout time.Duration) grpc.ServerOption {
-	grpcPrometheus.EnableHandlingTimeHistogram()
+	grpcPrometheus.EnableHandlingTimeHistogram(grpcPrometheus.WithHistogramBuckets(metrics.DefBuckets))
 	return grpc.UnaryInterceptor(
 		grpcMiddleware.ChainUnaryServer(
-			func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
-				ctxNew, cancel := context.WithTimeout(ctx, timeout)
-				defer cancel()
-
-				return handler(ctxNew, req)
-			},
 			// nolint:staticcheck
 			trace.UnaryServerInterceptor(
 				trace.WithPropagators(
@@ -62,7 +57,6 @@ func UnaryInterceptors(logger *exLogger.Logger, showHealthCheck, showPayloadLogs
 				grpcRecovery.WithRecoveryHandlerContext(recoveryHandler(logger)),
 			),
 			grpcPrometheus.UnaryServerInterceptor,
-
 			grpcZap.UnaryServerInterceptor(
 				logger.Named("grpc-middleware").Internal().(*zap.Logger),
 				grpcZap.WithLevels(func(code codes.Code) zapcore.Level {
@@ -87,6 +81,12 @@ func UnaryInterceptors(logger *exLogger.Logger, showHealthCheck, showPayloadLogs
 						logger.Internal().(*zap.Logger).Core().Enabled(zapcore.DebugLevel)
 				},
 			),
+			func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+				ctxNew, cancel := context.WithTimeout(ctx, timeout)
+				defer cancel()
+
+				return handler(ctxNew, req)
+			},
 		),
 	)
 }

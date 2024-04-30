@@ -1,0 +1,25 @@
+node-check:
+    stage: check
+    extends:
+        - .check-docker
+    variables:
+      CONTEXT_PATH: base/node
+      DOCKERFILE_PATH: Dockerfile
+    rules:
+      - if: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
+        changes:
+          - base/node/**/*
+
+node-build:
+    stage: build-base
+    extends:
+        - .build-docker
+    variables:
+      CONTEXT_PATH: base/node
+      IMAGE_NAME: base/node
+      DOCKERFILE_PATH: Dockerfile
+      LATEST: 1
+    rules:
+      - if: $CI_COMMIT_BRANCH == "main"
+        changes:
+          - base/node/**/*

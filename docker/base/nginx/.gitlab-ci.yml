@@ -1,0 +1,25 @@
+nginx-check:
+    stage: check
+    extends:
+        - .check-docker
+    variables:
+      CONTEXT_PATH: base/nginx
+      DOCKERFILE_PATH: Dockerfile
+    rules:
+      - if: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
+        changes:
+          - base/nginx/**/*
+
+nginx-build:
+    stage: build-base
+    extends:
+        - .build-docker
+    variables:
+      CONTEXT_PATH: base/nginx
+      IMAGE_NAME: base/nginx
+      DOCKERFILE_PATH: Dockerfile
+      LATEST: 1
+    rules:
+      - if: $CI_COMMIT_BRANCH == "main"
+        changes:
+          - base/nginx/**/*

@@ -1,0 +1,2 @@
+include:
+  - /openapi/test/.gitlab-ci.yml

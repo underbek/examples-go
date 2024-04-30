@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package gate.model;
+
+option go_package = "gitlab.com/test/package/models;models";
+
+message Amount {
+  string value = 1;
+  string currency = 2;
+}

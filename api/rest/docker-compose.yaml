@@ -1,0 +1,14 @@
+version: "3.7"
+
+
+services:
+  configuration-service:
+    image: swaggerapi/swagger-ui
+    restart: always
+    environment:
+      SWAGGER_JSON: /openapi/test/configuration-service/openapi.yaml
+    volumes:
+      - ./openapi/test/:/openapi/test/
+    ports:
+      - "8888:8080"
+

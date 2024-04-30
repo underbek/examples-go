@@ -1,0 +1,25 @@
+redis-commander-check:
+    stage: check-tool
+    extends:
+        - .check-docker
+    variables:
+      CONTEXT_PATH: tools/redis-commander
+      DOCKERFILE_PATH: Dockerfile
+    rules:
+      - if: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
+        changes:
+          - tools/redis-commander/**/*
+
+redis-commander-build:
+    stage: build-tool
+    extends:
+        - .build-docker
+    variables:
+      CONTEXT_PATH: tools/redis-commander
+      IMAGE_NAME: tools/redis-commander
+      DOCKERFILE_PATH: Dockerfile
+      LATEST: 1
+    rules:
+      - if: $CI_COMMIT_BRANCH == "main"
+        changes:
+          - tools/redis-commander/**/*

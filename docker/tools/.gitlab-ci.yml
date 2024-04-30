@@ -1,0 +1,18 @@
+include:
+  - /tools/argocd/.gitlab-ci.yml
+  - /tools/docker-builder/.gitlab-ci.yml
+  - /tools/git/.gitlab-ci.yml
+  - /tools/helm/.gitlab-ci.yml
+  - /tools/kube-deployer/.gitlab-ci.yml
+  - /tools/nexus-deployer/.gitlab-ci.yml
+  - /tools/golang-proto-builder/.gitlab-ci.yml
+  - /tools/npm-package-builder/.gitlab-ci.yml
+  - /tools/openapi-generator/.gitlab-ci.yml
+  - /tools/golang-openapi-generator/.gitlab-ci.yml
+  - /tools/python-package-builder/.gitlab-ci.yml
+  - /tools/python-proto-builder/.gitlab-ci.yml
+  - /tools/redis-commander/.gitlab-ci.yml
+  - /tools/redoc-ui/.gitlab-ci.yml
+  - /tools/swagger-ui/.gitlab-ci.yml
+  - /tools/yq/.gitlab-ci.yml
+  - /tools/python-test-runner/.gitlab-ci.yml

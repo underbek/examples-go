@@ -1,0 +1,26 @@
+python-test-runner-check:
+    stage: check-tool
+    extends:
+        - .check-docker
+    variables:
+      CONTEXT_PATH: tools/python-test-runner
+      DOCKERFILE_PATH: Dockerfile
+    rules:
+      - if: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
+        changes:
+          - base/python/**/*
+          - tools/python-test-runner/**/*
+
+python-test-runner-build:
+    stage: build-tool
+    extends:
+        - .build-docker
+    variables:
+      CONTEXT_PATH: tools/python-test-runner
+      IMAGE_NAME: tools/python-test-runner
+      DOCKERFILE_PATH: Dockerfile
+    rules:
+      - if: $CI_COMMIT_TAG =~ /^python-test-runner-(\d+(\.\d+(\.\d+)?)?)$/
+        variables:
+          LATEST: 1
+      - if: $CI_COMMIT_TAG =~ /^python-test-runner-(\d+(\.\d+(\.\d+)?)?(-[a-z0-9-]+)?)$/

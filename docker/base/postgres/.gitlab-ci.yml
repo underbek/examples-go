@@ -1,0 +1,25 @@
+postgres-check:
+    stage: check
+    extends:
+        - .check-docker
+    variables:
+      CONTEXT_PATH: base/postgres
+      DOCKERFILE_PATH: Dockerfile
+    rules:
+      - if: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
+        changes:
+          - base/postgres/**/*
+
+postgres-build:
+    stage: build-base
+    extends:
+        - .build-docker
+    variables:
+      CONTEXT_PATH: base/postgres
+      IMAGE_NAME: base/postgres
+      DOCKERFILE_PATH: Dockerfile
+      LATEST: 1
+    rules:
+      - if: $CI_COMMIT_BRANCH == "main"
+        changes:
+          - base/postgres/**/*

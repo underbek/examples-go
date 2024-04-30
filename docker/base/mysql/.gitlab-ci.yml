@@ -1,0 +1,25 @@
+mysql-check:
+    stage: check
+    extends:
+        - .check-docker
+    variables:
+      CONTEXT_PATH: base/mysql
+      DOCKERFILE_PATH: Dockerfile
+    rules:
+      - if: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
+        changes:
+          - base/mysql/**/*
+
+mysql-build:
+    stage: build-base
+    extends:
+        - .build-docker
+    variables:
+      CONTEXT_PATH: base/mysql
+      IMAGE_NAME: base/mysql
+      DOCKERFILE_PATH: Dockerfile
+      LATEST: 1
+    rules:
+      - if: $CI_COMMIT_BRANCH == "main"
+        changes:
+          - base/mysql/**/*

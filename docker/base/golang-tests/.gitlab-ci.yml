@@ -1,0 +1,26 @@
+golang-tests-check:
+    stage: check
+    extends:
+        - .check-docker
+    variables:
+      CONTEXT_PATH: base/golang-tests
+      DOCKERFILE_PATH: Dockerfile
+    rules:
+      - if: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
+        changes:
+          - base/golang-tests/**/*
+
+golang-tests-build:
+    stage: build-base
+    extends:
+        - .build-docker
+    variables:
+      CONTEXT_PATH: base/golang-tests
+      IMAGE_NAME: base/golang-tests
+      DOCKERFILE_PATH: Dockerfile
+    rules:
+      - if: $CI_COMMIT_TAG =~ /^golang-tests-(\d+(\.\d+(\.\d+)?)?(-[a-z0-9-]+)?)$/
+        variables:
+          LATEST: 1
+        changes:
+          - base/golang-tests/**/*

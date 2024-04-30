@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package gate.encryption_service;
+
+option go_package = "/app";
+
+enum EncryptorType {
+  UNSPECIFIED = 0;
+  CARD = 1;
+  CVV = 2;
+  REQUISITE = 3;
+  SECRET = 4;
+}
+
+message EncryptRequest {
+  string value = 1;
+  EncryptorType type = 2;
+}
+
+message EncryptResponse {
+  string encrypted_value = 1;
+  string encryptor_id = 2;
+}
+
+message DecryptRequest {
+  string encrypted_value = 1;
+  string encryptor_id = 2;
+}
+
+message DecryptResponse {
+  string value = 1;
+  EncryptorType type = 2;
+}
+
+service Encryption {
+  rpc Encrypt(EncryptRequest) returns (EncryptResponse);
+  rpc Decrypt(DecryptRequest) returns (DecryptResponse);
+}

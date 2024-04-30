@@ -1,0 +1,5 @@
+/build/*
+/swagger/schema
+.idea/
+gen/**/**
+**/.DS_Store

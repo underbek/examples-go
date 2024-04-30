@@ -1,0 +1,16 @@
+include:
+  - /base/alpine/.gitlab-ci.yml
+  - /base/dynamodb/.gitlab-ci.yml
+  - /base/golang/.gitlab-ci.yml
+  - /base/golangci-lint/.gitlab-ci.yml
+  - /base/golang-tests/.gitlab-ci.yml
+  - /base/golang-alpine/.gitlab-ci.yml
+  - /base/mysql/.gitlab-ci.yml
+  - /base/nginx/.gitlab-ci.yml
+  - /base/node/.gitlab-ci.yml
+  - /base/php/.gitlab-ci.yml
+  - /base/postgres/.gitlab-ci.yml
+  - /base/python/.gitlab-ci.yml
+  - /base/python-ci/.gitlab-ci.yml
+  - /base/rabbitmq/.gitlab-ci.yml
+  - /base/redis/.gitlab-ci.yml

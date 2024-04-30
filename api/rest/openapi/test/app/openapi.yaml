@@ -1,0 +1,187 @@
+openapi: 3.0.3
+info:
+  title: Test app
+  version: 0.0.1
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+servers:
+  - url: https://notify.com
+  - url: https://return.com
+tags:
+  - name: callback
+paths:
+  /transaction/{transaction_uuid}:
+    get:
+      tags:
+        - callback
+      summary: Transaction callback
+      description: Transaction callback with transaction
+      operationId: transaction callback get
+      parameters:
+        - name: transaction_uuid
+          in: path
+          description: transaction uuid
+          example: ad05cca2-19ab-42e2-9c45-17de58d58cbe
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Callback processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionCallbackResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Transaction not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 1002
+        message:
+          type: string
+          example: Application error
+      required:
+        - code
+        - message
+
+    TransactionAction:
+      type: object
+      properties:
+        action:
+          type: string
+          enum:
+          - await
+          - redirect
+          - needFingerprint
+        redirect_url:
+          type: string
+          example: "https://redirect.com/redirect/00000-00000-0000-000"
+        html:
+          type: string
+          example: "<h1>Hello, world!</h1>"
+
+    TransactionCallbackRequest:
+      type: object
+
+    TransactionCallbackResponse:
+      type: object
+
+    ThreeDSMethodDataRequest:
+      type: object
+      properties:
+        threeDSMethodData:
+          type: string
+          format: byte
+          example: eyJ0aHJlZURTU2VydmVyVHJhbnNJRCI6ImY4MDYyYjkyLTY2ZTktNGM1YS05NzlhLWY0NjVlNjZhNmU0OCJ9
+      required:
+        - threeDSMethodData
+
+    CresRequest:
+      type: object
+      properties:
+        cres:
+          type: string
+          format: byte
+          example: eyJtZXNzYWdlVHlwZSI6IkNSZXMiLCJtZXNzYWdlVmVyc2lvbiI6IjIuMS4wIiwidGhyZWVEU1NlcnZlclRyYW5zSUQiOiI1ZWY2MzBiMC03NmQwLTRmY2It
+      required:
+        - cres
+
+    MethodCallbackStatusResponse:
+      type: object
+      properties:
+        callbackReceived:
+          type: boolean
+          example: true
+      required:
+        - status
+
+    MethodReturnRequest:
+      type: object
+
+    RedirectProxyDataRequest:
+      type: object
+      properties:
+        html:
+          type: string
+          example: eyJ0aHJlZURTU2VydmVyVHJhbnNJRCI6ImY4MDYyYjkyLTY2ZTktNGM1YS05NzlhLWY0NjVlNjZhNmU0OCJ9
+      required:
+        - redirectProxyData
+
+    ResponseSuccess:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+
+    BrowserData:
+      type: object
+      properties:
+        colorDepth:
+          type: integer
+          example: 30
+        language:
+          type: string
+          example: en
+        timeZone:
+          type: integer
+          example: -180
+        timezoneName:
+          type: string
+          example: Europe/Kiev
+        javaEnabled:
+          type: boolean
+          example: false
+        screenHeight:
+          type: integer
+          example: 1120
+        screenWidth:
+          type: integer
+          example: 1792
+        windowHeight:
+          type: integer
+          example: 557
+        windowWidth:
+          type: integer
+          example: 1792
+        userAgent:
+          type: string
+          example: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36
+        acceptHeader:
+          type: string
+          example: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+      required:
+        - colorDepth
+        - language
+        - timeZone
+        - timezoneName
+        - javaEnabled
+        - screenHeight
+        - screenWidth
+        - windowHeight
+        - windowWidth
+        - userAgent
+        - acceptHeader

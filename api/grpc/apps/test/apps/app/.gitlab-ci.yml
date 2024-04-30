@@ -1,0 +1,59 @@
+encryption-service-golang-check:
+  extends:
+    - .check-golang-test
+  variables:
+    PROTOFILE_PATH: apps/test/apps/app/client.proto
+  rules:
+    - if: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
+      changes:
+        - apps/test/apps/app/**/*
+
+encryption-service-python-check:
+  extends:
+    - .check-python-test
+  variables:
+    PROTOFILE_PATH: apps/test/apps/app/client.proto
+  rules:
+    - if: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
+      changes:
+        - apps/test/apps/app/**/*
+
+encryption-service-golang-compile:
+  extends:
+    - .compile-golang-test
+  variables:
+    PROTOFILE_PATH: apps/test/apps/app/client.proto
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^app-(\d+(\.\d+(\.\d+)?)?(-[a-z0-9-]+)?)$/
+
+encryption-service-python-compile:
+  extends:
+    - .compile-python-test
+  variables:
+    PROTOFILE_PATH: apps/test/apps/app/client.proto
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^app-(\d+(\.\d+(\.\d+)?)?(-[a-z0-9-]+)?)$/
+
+encryption-service-golang-publish:
+  extends:
+    - .publish-golang
+  dependencies:
+    - app-golang-compile
+  variables:
+    GIT_STRATEGY: none
+    GIT_REPOSITORY_CLONE_URI: git@gitlab.com:test/package/app.git
+    BUILD_FOLDER: app
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^app-(\d+(\.\d+(\.\d+)?)?(-[a-z0-9-]+)?)$/
+
+encryption-service-python-publish:
+  extends:
+    - .publish-python
+  dependencies:
+    - app-python-compile
+  variables:
+    GIT_STRATEGY: none
+    BUILD_FOLDER: apps/encryption_service
+    PACKAGE_NAME: encryption_service_proto
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^app-(\d+(\.\d+(\.\d+)?)?(-[a-z0-9-]+)?)$/

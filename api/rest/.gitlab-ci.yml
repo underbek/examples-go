@@ -1,0 +1,282 @@
+stages:
+  - check
+  - compile
+  - publish
+  - publish-docker
+  - publish-helm
+
+
+.check-golang:
+  image: registry.com/tools/golang-openapi-generator
+  stage: check
+  variables: # Example set of required variables
+    OPENAPI_PATH: example/openapi.yaml
+    PACKAGE_NAME: example
+    CONFIG: golang-config.yaml
+  script:
+    - |-
+      PACKAGE_VERSION=0.0.1
+      if [[ ! -z $CI_COMMIT_TAG ]]; then
+        PACKAGE_VERSION=v$(echo $CI_COMMIT_TAG | sed -E 's/[^0-9]+//')
+        echo "Package version - ${PACKAGE_VERSION}"
+      fi
+    - CC_PACKAGE_NAME=$(echo "${PACKAGE_NAME}Api" | awk -F"-" '{for(i=1;i<=NF;i++){$i=toupper(substr($i,1,1)) substr($i,2)}} 1' OFS="")
+    - mkdir build
+    - oapi-codegen --config ${CONFIG} -package ${CC_PACKAGE_NAME} ${OPENAPI_PATH}
+  tags:
+    - k8s
+
+.check-python:
+  image: registry.com/tools/openapi-generator:1.0.1-7
+  stage: check
+  variables: # Example set of required variables
+    OPENAPI_PATH: example/openapi.yaml
+    PACKAGE_NAME: example
+  script:
+    - |-
+      PACKAGE_VERSION=0.0.1
+      if [[ ! -z $CI_COMMIT_TAG ]]; then
+        PACKAGE_VERSION=v$(echo $CI_COMMIT_TAG | sed -E 's/[^0-9]+//')
+        echo "Package version - ${PACKAGE_VERSION}"
+      fi
+    - openapi-generator generate -i ${OPENAPI_PATH} -g python -o build --package-name ${PACKAGE_NAME}_api -additional-properties=generateSourceCodeOnly --additional-properties=packageVersion=${PACKAGE_VERSION}
+  tags:
+    - k8s
+
+.check-ts:
+  image: registry.com/tools/openapi-generator:1.0.1-7
+  stage: check
+  variables: # Example set of required variables
+    OPENAPI_PATH: example/openapi.yaml
+    PACKAGE_NAME: example
+  script:
+    - |-
+      PACKAGE_VERSION=0.0.1
+      if [[ ! -z $CI_COMMIT_TAG ]]; then
+        PACKAGE_VERSION=v$(echo $CI_COMMIT_TAG | sed -E 's/[^0-9]+//')
+        echo "Package version - ${PACKAGE_VERSION}"
+      fi
+    - openapi-generator generate -i ${OPENAPI_PATH} -g typescript-axios -o build --package-name ${PACKAGE_NAME}-api --additional-properties=npmName=${PACKAGE_NAME}-api --additional-properties=npmVersion=${PACKAGE_VERSION}
+    - sed -i 's/.\/dist\/index.js/.\/index.ts/' build/package.json
+  tags:
+    - k8s
+
+.check-php:
+  image: registry.com/tools/openapi-generator
+  stage: check
+  variables: # Example set of required variables
+    OPENAPI_PATH: example/openapi.yaml
+    PACKAGE_NAME: example
+    PACKAGE_NAMESPACE: Example
+  script:
+    - |-
+      PACKAGE_VERSION=0.0.1
+      if [[ ! -z $CI_COMMIT_TAG ]]; then
+        PACKAGE_VERSION=v$(echo $CI_COMMIT_TAG | sed -E 's/[^0-9]+//')
+        echo "Package version - ${PACKAGE_VERSION}"
+      fi
+    - openapi-generator generate -i ${OPENAPI_PATH} -g php -o build --package-name ${PACKAGE_NAME} --additional-properties=packageName=${PACKAGE_NAME} --additional-properties=artifactVersion=${PACKAGE_VERSION} --additional-properties=invokerPackage=${PACKAGE_NAMESPACE}
+  tags:
+    - k8s
+
+.compile-golang:
+  stage: compile
+  extends:
+    - .check-golang
+  variables: # Example set of required variables
+    OPENAPI_PATH: example/openapi.yaml
+    PACKAGE_NAME: example
+  artifacts:
+    paths:
+      - build
+    expire_in: 1 week
+  tags:
+    - k8s
+
+.compile-python:
+  stage: compile
+  extends:
+    - .check-python
+  variables: # Example set of required variables
+    OPENAPI_PATH: example/openapi.yaml
+    PACKAGE_NAME: example
+  artifacts:
+    paths:
+      - build
+    expire_in: 1 week
+  tags:
+    - k8s
+
+.compile-python-backend:
+  stage: compile
+  extends:
+    - .check-python
+  variables: # Example set of required variables
+    OPENAPI_PATH: example/openapi.yaml
+    PACKAGE_NAME: example
+  artifacts:
+    paths:
+      - build
+    expire_in: 1 week
+  script:
+    - |-
+      PACKAGE_VERSION=0.0.1
+      if [[ ! -z $CI_COMMIT_TAG ]]; then
+        PACKAGE_VERSION=v$(echo $CI_COMMIT_TAG | sed -E 's/[^0-9]+//')
+        echo "Package version - ${PACKAGE_VERSION}"
+      fi
+    - openapi-generator generate -i ${OPENAPI_PATH} -g python -o build --package-name ${PACKAGE_NAME}_api -additional-properties=generateSourceCodeOnly --additional-properties=packageVersion=${PACKAGE_VERSION}
+  tags:
+    - k8s
+
+.compile-ts:
+  stage: compile
+  extends:
+    - .check-ts
+  variables: # Example set of required variables
+    OPENAPI_PATH: example/openapi.yaml
+    PACKAGE_NAME: example
+  artifacts:
+    paths:
+      - build
+    expire_in: 1 week
+  tags:
+    - k8s
+
+.compile-php:
+  stage: compile
+  extends:
+    - .check-php
+  variables: # Example set of required variables
+    OPENAPI_PATH: example/openapi.yaml
+    PACKAGE_NAME: example
+    PACKAGE_NAMESPACE: example
+  artifacts:
+    paths:
+      - build
+    expire_in: 1 week
+  tags:
+    - k8s
+
+.publish-golang:
+  image: registry.com/tools/git
+  stage: publish
+  dependencies: [ ]
+  variables: # Example set of required variables
+    GIT_STRATEGY: none
+    GIT_REPOSITORY_CLONE_URI: git@gitlab.com:test/package/example.git
+  script:
+    - eval $(ssh-agent -s)
+    - echo "$CI_SSH_KEY" | tr -d '\r' | ssh-add -
+    - PACKAGE_VERSION=v$(echo $CI_COMMIT_TAG | sed -E 's/[^0-9]+//')
+    - echo "Package version - ${PACKAGE_VERSION}"
+    - git clone ${GIT_REPOSITORY_CLONE_URI} package-folder
+    - rm -rf ./package-folder/*
+    - cp -R ./build/* ./package-folder
+    - cd ./package-folder
+    - |-
+      if [[ ! -z "$(git status --porcelain)" ]]; then
+          echo "Pushing changes"
+          git add .
+          git commit -m "Add files for version - ${PACKAGE_VERSION}" --no-verify
+      fi
+    - git tag ${PACKAGE_VERSION}
+    - git push origin HEAD --tags
+  tags:
+    - k8s
+
+.publish-python:
+  image: registry.com/tools/python-package-builder
+  stage: publish
+  dependencies: [ ]
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - cat ${CI_PYPIRC} > ~/.pypirc
+    - PACKAGE_VERSION=$(echo $CI_COMMIT_TAG | sed -E 's/[^0-9]+//')
+    - echo "Package version - ${PACKAGE_VERSION}"
+    - cd ./build
+    - sed -i "s/version = .*/version = ${PACKAGE_VERSION}/" setup.cfg
+    - python -m build
+    - python -m twine upload --repository nexus.com dist/* --verbose
+  tags:
+    - k8s
+
+.publish-ts:
+  image: registry.com/tools/npm-package-builder
+  stage: publish
+  dependencies: [ ]
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - cat ${CI_NPMRC} > ~/.npmrc
+    - PACKAGE_VERSION=$(echo $CI_COMMIT_TAG | sed -E 's/[^0-9]+//')
+    - echo "Package version - ${PACKAGE_VERSION}"
+    - cd ./build
+    - yq -P -i -o=json ".publishConfig.registry = \"${NPM_REGISTRY}\"" package.json
+    - npm install
+    - npm publish
+  tags:
+    - k8s
+
+.publish-php:
+  image: registry.com/tools/nexus-deployer
+  stage: publish
+  dependencies: [ ]
+  variables:
+    GIT_STRATEGY: none
+    PACKAGE_NAME: example
+  script:
+    - PACKAGE_VERSION=$(echo $CI_COMMIT_TAG | sed -E 's/[^0-9]+//')
+    - echo "Package version - ${PACKAGE_VERSION}"
+    - cd build
+    - PACKAGE_PATH=php-package.zip
+    - zip -r ${PACKAGE_PATH} .
+    - NEXUS_RESPONSE=$(curl --write-out '%{http_code}' --silent --output /dev/null -u ${COMPOSER_USERNAME}:${COMPOSER_PASSWORD} ${COMPOSER_REGISTRY}packages/upload/${PACKAGE_NAME}/${PACKAGE_VERSION} --upload-file ${PACKAGE_PATH})
+    - |-
+      if [[ ! $NEXUS_RESPONSE = "200" ]]; then
+        echo "Upload error with status code - ${NEXUS_RESPONSE}"
+        exit 1
+      fi
+  tags:
+    - k8s
+
+.prepare-swagger:
+  image: registry.com/tools/yq
+  stage: compile
+  artifacts:
+    paths:
+      - openapi
+    expire_in: 1 week
+  variables:
+    OPENAPI_PATH: openapi/example.yaml
+  script:
+    - IMAGE_VERSION=$(echo $CI_COMMIT_TAG | sed -E 's/[^0-9]+//')
+    - echo "Version - ${IMAGE_VERSION}"
+    - yq -P -i ".info.version = \"${IMAGE_VERSION}\"" ${OPENAPI_PATH}
+  tags:
+    - k8s
+
+.publish-swagger-docker:
+  image:
+    name: gcr.io/kaniko-project/executor:v1.9.0-debug
+    entrypoint: [ "" ]
+  stage: publish-docker
+  variables: # required
+    IMAGE_NAME: swagger/example
+    OPENAPI_PATH: openapi/example.yaml
+  script:
+    - cp -r ${OPENAPI_PATH} swagger/schema/
+    - echo ${DOCKER_AUTH_CONFIG} > /kaniko/.docker/config.json
+    - echo "Image name - ${IMAGE_NAME}"
+    - IMAGE_VERSION=$(echo $CI_COMMIT_TAG | sed -E 's/[^0-9]+//')
+    - echo "Pushing version - ${IMAGE_VERSION}"
+    - DESTINATION=" --destination ${REGISTRY_URL}/${IMAGE_NAME}:${IMAGE_VERSION}"
+    - DESTINATION="${DESTINATION} --destination ${REGISTRY_URL}/${IMAGE_NAME}:latest"
+    - /kaniko/executor
+      --context ${CI_PROJECT_DIR}/swagger
+      --dockerfile docker/Dockerfile
+      ${DESTINATION}
+  tags:
+    - k8s
+

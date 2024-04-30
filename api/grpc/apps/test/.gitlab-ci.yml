@@ -1,0 +1,27 @@
+include:
+  - /apps/test/apps/.gitlab-ci.yml
+  - /apps/test/models/.gitlab-ci.yml
+
+.check-golang-gate:
+  extends:
+    - .check-golang
+  variables:
+    PROTO_LOOKUP_ROOT: ./apps/test/
+
+.check-python-gate:
+  extends:
+    - .check-python
+  variables:
+    PROTO_LOOKUP_ROOT: ./apps/test/
+
+.compile-golang-gate:
+  extends:
+    - .compile-golang
+  variables:
+    PROTO_LOOKUP_ROOT: ./apps/test/
+
+.compile-python-gate:
+  extends:
+    - .compile-python
+  variables:
+    PROTO_LOOKUP_ROOT: ./apps/test/

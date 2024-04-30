@@ -3,12 +3,13 @@ package taskmanager
 import (
 	"context"
 	"errors"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"github.com/underbek/examples-go/logger"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/underbek/examples-go/logger"
 )
 
 var (

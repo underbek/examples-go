@@ -83,7 +83,7 @@ func (c *consumer) Consume(ctx context.Context, handler Handler) error {
 				return ctx.Err()
 			default:
 				err := c.run(ctx, handler)
-				if errors.Is(err, continueError) {
+				if errors.Is(err, errContinue) {
 					continue
 				}
 
@@ -97,7 +97,7 @@ func (c *consumer) Consume(ctx context.Context, handler Handler) error {
 	return gr.Wait()
 }
 
-var continueError = errors.New("continue")
+var errContinue = errors.New("continue")
 
 func (c *consumer) run(ctx context.Context, handler Handler) error {
 	defer func() {
@@ -117,7 +117,7 @@ func (c *consumer) run(ctx context.Context, handler Handler) error {
 
 		time.Sleep(c.manualRetryDuration)
 
-		return continueError
+		return errContinue
 	}
 
 	c.metrics.incMessage(msg).observeLatency(msg)
@@ -156,7 +156,7 @@ func (c *consumer) run(ctx context.Context, handler Handler) error {
 
 		time.Sleep(c.manualRetryDuration)
 
-		return continueError
+		return errContinue
 	}
 
 	err = c.commit(msgCtx, msg)

@@ -19,7 +19,7 @@ func registryCred() {
 	authStr := base64.URLEncoding.EncodeToString([]byte(fmt.Sprintf("%v:%v", userName, password)))
 
 	cfg := dockercfg.Config{}
-	cfg.AuthConfigs = map[string]dockercfg.AuthConfig{host: dockercfg.AuthConfig{
+	cfg.AuthConfigs = map[string]dockercfg.AuthConfig{host: {
 		Username: userName,
 		Password: password,
 		Auth:     authStr,

@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"golang.org/x/sync/errgroup"
 	"math/rand"
 	"time"
+
+	"golang.org/x/sync/errgroup"
 )
 
 type Job interface {
@@ -15,7 +16,7 @@ type Job interface {
 
 type MyBestSuperJob struct{}
 
-func (j *MyBestSuperJob) Run(ctx context.Context) error {
+func (j *MyBestSuperJob) Run(_ context.Context) error {
 	rand.Seed(time.Now().UnixNano())
 	delay := time.Second * time.Duration(rand.Intn(10))
 	time.Sleep(delay)

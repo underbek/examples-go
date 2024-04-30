@@ -9,9 +9,9 @@ import (
 	"go.opentelemetry.io/otel"
 )
 
-type AmqpHeadersCarrier map[string]interface{}
+type AMQPHeadersCarrier map[string]interface{}
 
-func (a AmqpHeadersCarrier) Get(key string) string {
+func (a AMQPHeadersCarrier) Get(key string) string {
 	v, ok := a[key]
 	if !ok {
 		return ""
@@ -19,11 +19,11 @@ func (a AmqpHeadersCarrier) Get(key string) string {
 	return v.(string)
 }
 
-func (a AmqpHeadersCarrier) Set(key string, value string) {
+func (a AMQPHeadersCarrier) Set(key string, value string) {
 	a[key] = value
 }
 
-func (a AmqpHeadersCarrier) Keys() []string {
+func (a AMQPHeadersCarrier) Keys() []string {
 	i := 0
 	r := make([]string, len(a))
 
@@ -36,7 +36,7 @@ func (a AmqpHeadersCarrier) Keys() []string {
 }
 
 func injectAMQPHeaders(ctx context.Context, log *logger.Logger) map[string]interface{} {
-	h := make(AmqpHeadersCarrier)
+	h := make(AMQPHeadersCarrier)
 	otel.GetTextMapPropagator().Inject(ctx, h)
 
 	if meta := logger.ParseCtxMeta(ctx); meta != nil {
@@ -53,7 +53,7 @@ func injectAMQPHeaders(ctx context.Context, log *logger.Logger) map[string]inter
 }
 
 func parseAMQPHeaders(ctx context.Context, headers amqp.Table) context.Context {
-	carrier := AmqpHeadersCarrier(headers)
+	carrier := AMQPHeadersCarrier(headers)
 
 	if data := carrier.Get(logger.Meta); len(data) != 0 {
 		var meta map[string]string

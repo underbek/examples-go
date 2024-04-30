@@ -2,6 +2,7 @@ package taskmanager
 
 import (
 	"context"
+
 	"github.com/underbek/examples-go/logger"
 	"github.com/underbek/examples-go/tracing"
 	"go.opentelemetry.io/otel/trace"

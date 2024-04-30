@@ -3,6 +3,8 @@ package grpcserver
 import (
 	"context"
 	"fmt"
+	"net"
+
 	"github.com/underbek/examples-go/logger"
 	mw "github.com/underbek/examples-go/middlewares/grpc"
 	"golang.org/x/sync/errgroup"
@@ -11,7 +13,6 @@ import (
 	healthApi "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/reflection"
-	"net"
 )
 
 type GRPCServer struct {

@@ -17,7 +17,7 @@ func newHealthserver(srv health_api.HealthServer, checks ...checkHealthFunc) *he
 
 type checkHealthFunc func(ctx context.Context) bool
 
-func (h *healthserver) Check(ctx context.Context, request *health_api.HealthCheckRequest) (*health_api.HealthCheckResponse, error) {
+func (h *healthserver) Check(ctx context.Context, _ *health_api.HealthCheckRequest) (*health_api.HealthCheckResponse, error) {
 	for _, f := range h.checks {
 		if !f(ctx) {
 			return &health_api.HealthCheckResponse{Status: health_api.HealthCheckResponse_NOT_SERVING}, nil

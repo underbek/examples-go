@@ -66,7 +66,7 @@ func parseErrorCode(err error) string {
 	return undefinedErrorCode
 }
 
-func parseSqlMethod(sql string) string {
+func parseSQLMethod(sql string) string {
 	sql = strings.TrimSpace(sql)
 
 	sl := strings.Split(sql, " ")
@@ -91,7 +91,7 @@ func parseSqlMethod(sql string) string {
 }
 
 func collectMetrics(c *pgxPoolCollector, start time.Time, sql string, err error) {
-	method := parseSqlMethod(sql)
+	method := parseSQLMethod(sql)
 
 	c.queryExecutedHistogram.WithLabelValues(method).Observe(time.Since(start).Seconds())
 	c.queryExecutedCounter.WithLabelValues(method, parseErrorCode(err)).Inc()
